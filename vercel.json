@@ -4,8 +4,6 @@
     "functions": {
         "api/index.php": { "runtime": "vercel-php@0.8.0" }
     },
-    "buildCommand": "echo 'No build command needed'",
-    "outputDirectory": ".",
     "routes": [
         {
             "src": "/(css|js|images|favicon.ico|robots.txt|storage|assets|build)/(.*)",
@@ -15,16 +13,5 @@
             "src": "/(.*)",
             "dest": "/api/index.php"
         }
-    ],
-    "env": {
-        "APP_CONFIG_CACHE": "/tmp/config.php",
-        "APP_EVENTS_CACHE": "/tmp/events.php",
-        "APP_PACKAGES_CACHE": "/tmp/packages.php",
-        "APP_ROUTES_CACHE": "/tmp/routes.php",
-        "VIEW_COMPILED_PATH": "/tmp",
-        "CACHE_DIRECTORY": "/tmp",
-        "SESSION_DRIVER": "cookie",
-        "LOG_CHANNEL": "stderr",
-        "DB_CONNECTION": "pgsql"
-    }
+    ]
 }
