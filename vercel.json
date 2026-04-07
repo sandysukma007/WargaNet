@@ -21,8 +21,11 @@
     "env": {
         "APP_ENV": "production",
         "APP_DEBUG": "false",
-        "CACHE_DRIVER": "array",
+        "LOG_CHANNEL": "stderr",
         "SESSION_DRIVER": "cookie",
+        "CACHE_STORE": "array",
+        "CACHE_DRIVER": "array",
+        "DB_CONNECTION": "pgsql",
         "VIEW_COMPILED_PATH": "/tmp",
         "APP_CONFIG_CACHE": "/tmp/config.php",
         "APP_EVENTS_CACHE": "/tmp/events.php",
