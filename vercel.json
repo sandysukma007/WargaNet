@@ -4,6 +4,8 @@
     "functions": {
         "api/index.php": { "runtime": "vercel-php@0.8.0" }
     },
+    "buildCommand": "echo 'No build command needed'",
+    "outputDirectory": ".",
     "routes": [
         {
             "src": "/(css|js|images|favicon.ico|robots.txt|storage|assets|build)/(.*)",
