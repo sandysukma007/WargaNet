@@ -9,9 +9,19 @@ $_ENV['APP_DEBUG'] = 'true';
 putenv('APP_DEBUG=true');
 
 // Ensure Laravel uses /tmp for all writable directories
-$viewPath = '/tmp/views';
-if (!is_dir($viewPath)) { mkdir($viewPath, 0777, true); }
+$tmpPath = '/tmp';
+$viewPath = "$tmpPath/views";
+$cachePath = "$tmpPath/cache";
+$sessionPath = "$tmpPath/sessions";
+
+foreach ([$viewPath, $cachePath, $sessionPath] as $path) {
+    if (!is_dir($path)) { mkdir($path, 0777, true); }
+}
+
 putenv("VIEW_COMPILED_PATH=$viewPath");
+putenv("SESSION_DRIVER=cookie");
+putenv("LOG_CHANNEL=stderr");
+putenv("LIVEWIRE_MANIFEST_PATH=$cachePath/livewire-components.php");
 
 // Forward Vercel requests to the normal Laravel index.php
 require __DIR__ . '/../public/index.php';
