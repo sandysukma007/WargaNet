@@ -131,19 +131,14 @@ new class extends Component
                 <div class="p-4 sm:p-5">
                     <!-- Interactions -->
                     <div class="flex items-center gap-4 mb-3">
-                        <button wire:click="like({{ $post->id }})" class="flex items-center gap-1.5 transition-colors pointer {{ $userAction === 'like' ? 'text-red-500' : 'text-gray-900 hover:text-gray-500' }}">
-                           <svg class="h-6 w-6" fill="{{ $userAction === 'like' ? 'currentColor' : 'none' }}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                               <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-                           </svg>
-                           <span class="text-sm font-semibold">{{ $post->likes }}</span>
+                        <button wire:click="like({{ $post->id }})" class="flex items-center gap-1.5 transition-all {{ $userAction === 'like' ? 'scale-110' : 'hover:scale-105' }}">
+                           <span class="text-xl leading-none">{{ $userAction === 'like' ? '❤️' : '🤍' }}</span>
+                           <span class="text-sm font-semibold {{ $userAction === 'like' ? 'text-red-500' : 'text-gray-700' }}">{{ $post->likes }}</span>
                         </button>
                         
-                        <button wire:click="dislike({{ $post->id }})" class="flex items-center gap-1.5 transition-colors pointer {{ $userAction === 'dislike' ? 'text-black' : 'text-gray-900 hover:text-gray-500' }}">
-                           <!-- Hand Thumb Down Icon -->
-                           <svg class="h-6 w-6" fill="{{ $userAction === 'dislike' ? 'currentColor' : 'none' }}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                               <path stroke-linecap="round" stroke-linejoin="round" d="M7.498 15.25H4.372c-1.026 0-1.945-.694-2.054-1.715a12.209 12.209 0 0 1-.068-1.285c0-2.843.992-5.454 2.649-7.521C5.313 4.247 5.912 4 6.53 4h2.88c.483 0 .964.078 1.423.23l3.114 1.04a4.501 4.501 0 0 0 1.423.23h1.294v-.008h-.008v.008c-.083-.205-.173-.405-.27-.602-.197-.4.078-.898.523-.898h.908c.889 0 1.713.518 1.972 1.368a12 12 0 0 1 .521 3.507c0 1.553-.295 3.036-.831 4.398C20.613 14.547 19.833 15 19 15h-1.053c-.472 0-.745-.551-.5-.96a12.204 12.204 0 0 0 1.5-4.125 12.01 12.01 0 0 0-.351-3.915Z" />
-                           </svg>
-                           <span class="text-sm font-semibold">{{ $post->dislikes }}</span>
+                        <button wire:click="dislike({{ $post->id }})" class="flex items-center gap-1.5 transition-all {{ $userAction === 'dislike' ? 'scale-110' : 'hover:scale-105' }}">
+                           <span class="text-xl leading-none">{{ $userAction === 'dislike' ? '👎' : '👎🏻' }}</span>
+                           <span class="text-sm font-semibold {{ $userAction === 'dislike' ? 'text-gray-900' : 'text-gray-400' }}">{{ $post->dislikes }}</span>
                         </button>
                     </div>
 
