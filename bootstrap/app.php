@@ -14,7 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->report(function (\ErrorException $e) {
+            if (str_contains($e->getMessage(), 'tempnam(): file created in the system\'s temporary directory')) {
+                return false;
+            }
+        });
     })
     ->registered(function ($app) {
         if (isset($_SERVER['VERCEL_URL'])) {
