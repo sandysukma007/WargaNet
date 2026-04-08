@@ -209,9 +209,9 @@ x-transition:leave-start="opacity-100 max-h-96"
                             <div class="text-gray-500 dark:text-gray-400 text-[13px] mb-2">{{ $post->comments->count() }} komentar</div>
                         @endif
 @foreach ($post->comments->take(3) as $comment)
-                            <p class="text-sm text-gray-900 dark:text-gray-100 leading-tight">
-{{ $comment->content }}
-                            </p>
+<div class="text-sm text-gray-900 dark:text-gray-100 leading-tight">
+  <span class="font-bold mr-1">{{ $comment->nickname }}</span>{{ $comment->content }}
+</div>
                         @endforeach
 
                         <div class="text-[11px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mt-2 mb-1">
