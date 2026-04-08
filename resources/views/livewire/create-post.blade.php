@@ -24,7 +24,8 @@ new class extends Component
             $fileName = time() . '_' . $this->image->getClientOriginalName();
             
             try {
-                $path = Storage::disk('s3')->putFileAs('photos', $this->image, $fileName);
+                // Use Livewire's native storeAs method which natively supports copying from S3 tmp to S3 destination
+                $path = $this->image->storeAs('photos', $fileName, 's3');
             } catch (\Exception $e) {
                 throw new \Exception('Gagal mengunggah file ke Supabase: ' . $e->getMessage());
             }
