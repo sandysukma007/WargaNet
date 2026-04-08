@@ -142,7 +142,7 @@ new class extends Component
 
             $url = 'https://lwdgrjxgwtcqfctqbbbu.supabase.co/storage/v1/object/public/' . env('AWS_BUCKET') . '/' . $path;
 
-            Post::create([
+            $newPost = Post::create([
                 'image_url'  => $url,
                 'caption'    => $this->caption,
                 'ip_address' => $ip,
@@ -155,6 +155,8 @@ new class extends Component
 
             Cache::put('last_upload_' . $ip, true, now()->addHour());
             Cache::put('last_upload_time_' . $ip, now(), now()->addHour());
+
+            Event::dispatch(new PostCreated($newPost));
 
             $this->reset(['rawImage', 'compressedImage', 'caption', 'hashtagQuery', 'showSuggestions']);
             $this->dispatch('post-created');
