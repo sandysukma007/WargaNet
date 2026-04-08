@@ -5,6 +5,11 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
+// Ultimate silencer for Vercel tempnam fallback warning
+set_error_handler(function ($errno, $errstr) {
+    return str_contains($errstr, 'tempnam()');
+}, E_WARNING);
+
 // Determine if the application is in maintenance mode...
 if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
     require $maintenance;
