@@ -153,10 +153,44 @@ new class extends Component
                     </div>
 
                     @if($post->caption)
-                    <p class="text-gray-900 text-sm leading-relaxed mb-3">
-                        <span class="font-bold mr-1">Warga-{{ substr(md5($post->ip_address ?? $post->id), 0, 4) }}</span>
-                        {!! $this->renderCaption($post->caption) !!}
-                    </p>
+                    @php
+                        $caption   = $post->caption;
+                        $isLong    = mb_strlen($caption) > 30;
+                        $short     = $isLong ? mb_substr($caption, 0, 30) : $caption;
+                        $nickname  = 'Warga-' . substr(md5($post->ip_address ?? $post->id), 0, 4);
+                    @endphp
+                    <div x-data="{ expanded: false }" class="text-gray-900 text-sm leading-relaxed mb-3">
+                        <span class="font-bold mr-1">{{ $nickname }}</span>
+
+                        @if($isLong)
+                            {{-- Collapsed: show first 30 chars --}}
+                            <span x-show="!expanded">
+                                {!! $this->renderCaption($short) !!}<span class="text-gray-400">...</span>
+                                <button @click="expanded = true"
+                                    class="text-gray-500 font-semibold ml-1 hover:text-gray-700 transition-colors text-xs">
+                                    Lihat selengkapnya
+                                </button>
+                            </span>
+
+                            {{-- Expanded: show full caption with slide animation --}}
+                            <span x-show="expanded"
+                                x-transition:enter="transition-all ease-out duration-300"
+                                x-transition:enter-start="opacity-0 max-h-0"
+                                x-transition:enter-end="opacity-100 max-h-96"
+                                x-transition:leave="transition-all ease-in duration-200"
+                                x-transition:leave-start="opacity-100 max-h-96"
+                                x-transition:leave-end="opacity-0 max-h-0"
+                                class="overflow-hidden inline">
+                                {!! $this->renderCaption($caption) !!}
+                                <button @click="expanded = false"
+                                    class="text-gray-400 font-semibold ml-1 hover:text-gray-600 transition-colors text-xs block mt-0.5">
+                                    Lihat sedikit
+                                </button>
+                            </span>
+                        @else
+                            {!! $this->renderCaption($caption) !!}
+                        @endif
+                    </div>
                     @endif
 
                     <!-- Comments -->
