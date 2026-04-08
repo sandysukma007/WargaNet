@@ -234,14 +234,14 @@ x-transition:leave-start="opacity-100 max-h-96"
             </article>
         @endforeach
 
-        @if ($posts->hasMorePages())
+@if ($this->posts->hasMorePages())
              <div wire:infinite-scroll="nextPage" class="text-center py-8">
                 <div class="animate-spin inline-block w-6 h-6 border-4 rounded-full border-gray-300 border-t-blue-600 mx-auto"></div>
             </div>
         @endif
     </div>
 
-    @if ($posts->hasMorePages())
+    @if ($this->posts->hasMorePages())
         <div wire:infinite-scroll="nextPage"></div>
     @endif
 </div>

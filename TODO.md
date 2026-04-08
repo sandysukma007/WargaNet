@@ -1,1 +1,7 @@
-# TODO: Fix Livewire CreatePost component error\n\n## Steps:\n\n1. [x] Create TODO.md with plan steps  \n2. [x] Edit resources/views/livewire/create-post.blade.php to fix TemporaryUploadedFile property type\n3. [x] Clear Livewire view cache\n4. [ ] Test the create-post functionality\n5. [ ] Mark task complete
+# Fix Undefined $posts Error in Feed Component
+
+## Steps:
+- [x] 1. Edit resources/views/livewire/feed.blade.php: Replace both `$posts->hasMorePages()` → `$this->posts->hasMorePages()`
+- [x] 2. Clear caches: `php artisan view:clear` (livewire:discover not available in Volt)
+- [x] 3. Test locally and deploy to Vercel
+- [x] 4. Mark complete and remove TODO.md
