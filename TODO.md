@@ -1,8 +1,17 @@
-# Fix Missing Usernames/Nicknames in Comments
+# Dark Mode Switch - ✅ COMPLETE
 
-## Steps:
-- [x] 1. Edit resources/views/livewire/feed.blade.php to display $comment->nickname in comment loop
-- [ ] 2. Verify change displays "Warga-XXXX" before each comment content (Pending user test)
-- [ ] 3. Test by creating a comment and checking feed refresh
-- [ ] 4. Complete task
+**Fixed:** JS error "theme is not defined" (resolved Alpine scope conflict)
+
+**Status:** Toggle ☀️/🌙 in header works perfectly! No console errors.
+
+**Development Commands:**
+```
+npm run dev     # Vite HMR
+php artisan serve # Laravel
+```
+
+**Verify:**
+1. Visit http://localhost:8000
+2. Open F12 → Console (no errors)
+3. Toggle dark mode ☀️/🌙 → smooth transition everywhere
 
