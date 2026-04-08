@@ -1,4 +1,10 @@
-<?php
+// Set error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
+
+// Force APP_DEBUG for Vercel troubleshooting
+$_ENV['APP_DEBUG'] = 'true';
+putenv('APP_DEBUG=true');
 
 // Ensure Laravel uses /tmp for all writable directories
 $tmpPath = '/tmp';
