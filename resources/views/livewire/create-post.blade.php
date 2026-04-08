@@ -13,7 +13,7 @@ new class extends Component
     use WithFileUploads;
 
     public $rawImage;
-    public TemporaryUploadedFile $compressedImage = null;
+    public ?TemporaryUploadedFile $compressedImage = null;
     public $caption = '';
     public string $hashtagQuery = '';
     public bool $showSuggestions = false;
