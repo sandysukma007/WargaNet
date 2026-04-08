@@ -37,5 +37,11 @@
         "APP_PACKAGES_CACHE": "/tmp/packages.php",
         "APP_ROUTES_CACHE": "/tmp/routes.php",
         "APP_SERVICES_CACHE": "/tmp/services.php"
-    }
+    },
+    "crons": [
+        {
+            "path": "/api/cron/cleanup",
+            "schedule": "0 0 * * *"
+        }
+    ]
 }

@@ -6,6 +6,7 @@ use App\Models\Comment;
 use Livewire\Volt\Component;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
+use Illuminate\Support\Facades\Cache;
 
 new class extends Component
 {
@@ -13,7 +14,11 @@ new class extends Component
     #[Computed]
     public function posts()
     {
-        return Post::with(['comments'])->latest()->get();
+        // Don't show posts older than 1 month
+        return Post::with(['comments'])
+            ->where('created_at', '>=', now()->subMonth())
+            ->latest()
+            ->get();
     }
 
     #[Computed]
@@ -68,14 +73,38 @@ new class extends Component
         }
     }
 
+    private function hasProfanity($text) {
+        $badWords = ['anjing', 'bangsat', 'kontol', 'memek', 'ngentot', 'babi', 'tolol', 'goblok', 'peli', 'jembut', 'pukimak', 'lonte', 'pelacur'];
+        $text = strtolower($text);
+        foreach ($badWords as $word) {
+            if (str_contains($text, $word)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function addComment($postId, $content)
     {
         if (trim($content) === '') return;
 
+        $ip = request()->ip();
+
+        if (Cache::has('banned_' . $ip)) {
+            session()->flash('error', 'Anda diblokir sementara karena menggunakan kata kasar.');
+            return;
+        }
+
+        if ($this->hasProfanity($content)) {
+            Cache::put('banned_' . $ip, true, now()->addHour());
+            session()->flash('error', 'Kata kasar terdeteksi! Anda diblokir dari memposting selama 1 jam.');
+            return;
+        }
+
         Comment::create([
             'post_id' => $postId,
             'content' => $content,
-            'nickname' => 'Warga-' . substr(md5(request()->ip()), 0, 4)
+            'nickname' => 'Warga-' . substr(md5($ip), 0, 4)
         ]);
     }
 };
@@ -133,8 +162,15 @@ new class extends Component
                             </p>
                         @endforeach
 
+                        <div class="text-[11px] text-gray-400 uppercase tracking-wide mt-2 mb-1">
+                            {{ $post->created_at->format('d M Y') }}
+                        </div>
+
                         <!-- Comment Input -->
-                        <div class="relative mt-3 pt-3 border-t border-gray-100">
+                        @if (session()->has('error'))
+                            <div class="text-xs font-semibold text-red-500 mt-2 mb-2">{{ session('error') }}</div>
+                        @endif
+                        <div class="relative mt-2 pt-3 border-t border-gray-100">
                             <input type="text"
                                    placeholder="Tambahkan komentar..."
                                    x-on:keydown.enter="$wire.addComment({{ $post->id }}, $event.target.value); $event.target.value = ''"

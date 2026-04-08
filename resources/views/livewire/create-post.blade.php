@@ -4,6 +4,7 @@ use App\Models\Post;
 use Livewire\Volt\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 
 new class extends Component
 {
@@ -12,8 +13,37 @@ new class extends Component
     public $image;
     public $caption = '';
 
+    private function hasProfanity($text) {
+        $badWords = ['anjing', 'bangsat', 'kontol', 'memek', 'ngentot', 'babi', 'tolol', 'goblok', 'peli', 'jembut', 'pukimak', 'lonte', 'pelacur'];
+        $text = strtolower($text);
+        foreach ($badWords as $word) {
+            if (str_contains($text, $word)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function save()
     {
+        $ip = request()->ip();
+
+        if (Cache::has('banned_' . $ip)) {
+            session()->flash('error', 'Anda masih diblokir sementara karena menggunakan kata kasar.');
+            return;
+        }
+
+        if (Cache::has('last_upload_' . $ip)) {
+            $timeRemaining = Cache::get('last_upload_time_' . $ip) ? now()->diffInMinutes(Cache::get('last_upload_time_' . $ip)->addHour()) : 60;
+            session()->flash('error', 'Silakan tunggu sekitar ' . $timeRemaining . ' menit lagi untuk memposting.');
+            return;
+        }
+
+        if ($this->hasProfanity($this->caption)) {
+            Cache::put('banned_' . $ip, true, now()->addHour());
+            session()->flash('error', 'Kata kasar terdeteksi! Anda diblokir dari memposting selama 1 jam.');
+            return;
+        }
         $this->validate([
             'image' => 'required|image', 
             'caption' => 'nullable|string|max:1000',
@@ -45,6 +75,9 @@ new class extends Component
                 'image_url' => $url,
                 'caption' => $this->caption,
             ]);
+
+            Cache::put('last_upload_' . $ip, true, now()->addHour());
+            Cache::put('last_upload_time_' . $ip, now(), now()->addHour());
 
             $this->reset(['image', 'caption']);
             $this->dispatch('post-created');
