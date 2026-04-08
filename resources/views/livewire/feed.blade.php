@@ -97,13 +97,13 @@ new class extends Component
         $ip = request()->ip();
 
         if (Ban::isBanned($ip)) {
-            session()->flash('comment_error', 'Anda masih diblokir karena sebelumnya menggunakan kata kasar.');
+            $this->dispatch('comment_error', message: 'Anda masih diblokir karena sebelumnya menggunakan kata kasar.');
             return;
         }
 
         if ($this->hasProfanity($content)) {
             Ban::banIp($ip);
-            session()->flash('comment_error', 'Kata kasar terdeteksi! Anda diblokir 1 jam.');
+            $this->dispatch('comment_error', message: 'Kata kasar terdeteksi! Anda diblokir 1 jam.');
             return;
         }
 
@@ -218,9 +218,8 @@ x-transition:leave-start="opacity-100 max-h-96"
 {{ $post->created_at->format('d M Y') }}
                         </div>
 
-@if (session()->has('comment_error'))
-                            <div class="text-xs font-semibold text-red-500 dark:text-red-400 mt-1">{{ session('comment_error') }}</div>
-                        @endif
+                        {{-- Error display will be handled by Livewire listener --}}
+                        <div x-data="{ error: '', init() { $wire.on('comment_error', (msg) => { this.error = msg; setTimeout(() => this.error = '', 5000) }) } }" x-show="error" x-transition class="text-xs font-semibold text-red-500 mt-1 bg-red-50 p-2 rounded" x-text="error"></div>
 
                         <div class="relative mt-2 pt-3 border-t border-gray-100 dark:border-gray-700">
                             <input type="text"

@@ -6,6 +6,7 @@ use App\Models\Hashtag;
 use Livewire\Volt\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
 
 new class extends Component
@@ -101,13 +102,13 @@ new class extends Component
         $blocked = $this->blocked;
 
         if ($blocked['banned']) {
-            session()->flash('error', $blocked['message']);
+            $this->dispatch('error', message: $blocked['message']);
             return;
         }
 
         if ($this->hasProfanity($this->caption)) {
             Ban::banIp($ip);
-            session()->flash('error', 'Kata kasar terdeteksi! Anda diblokir dari memposting selama 1 jam.');
+            $this->dispatch('error', message: 'Kata kasar terdeteksi! Anda diblokir dari memposting selama 1 jam.');
             return;
         }
 
@@ -148,7 +149,7 @@ new class extends Component
             $this->dispatch('post-created');
 
         } catch (\Exception $e) {
-            session()->flash('error', 'Gagal memproses postingan: ' . $e->getMessage());
+            $this->dispatch('error', message: 'Gagal memproses postingan: ' . $e->getMessage());
         }
     }
 };
