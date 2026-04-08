@@ -21,8 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
         });
     })
     ->registered(function ($app) {
-        if (isset($_SERVER['VERCEL_URL'])) {
-            $app->useStoragePath('/tmp');
+        if (isset($_SERVER['VERCEL']) || isset($_ENV['VERCEL']) || getenv('VERCEL') == '1' || isset($_SERVER['VERCEL_URL'])) {
+            $app->useStoragePath('/tmp/storage');
         }
     })
     ->create();

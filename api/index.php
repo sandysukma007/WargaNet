@@ -9,12 +9,14 @@ $_ENV['APP_DEBUG'] = 'true';
 putenv('APP_DEBUG=true');
 
 // Ensure Laravel uses /tmp for all writable directories
-$tmpPath = '/tmp';
+$tmpPath = '/tmp/storage';
 $storagePaths = [
     "$tmpPath/framework/views",
     "$tmpPath/framework/sessions",
     "$tmpPath/framework/cache",
     "$tmpPath/logs",
+    "$tmpPath/framework/views/livewire",
+    "$tmpPath/framework/cache/livewire",
 ];
 
 foreach ($storagePaths as $path) {
