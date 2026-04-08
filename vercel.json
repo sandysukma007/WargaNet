@@ -13,6 +13,7 @@
             "src": "/(css|js|images|favicon.ico|robots.txt|storage|assets)/(.*)",
             "dest": "/public/$1/$2"
         },
+        { "handle": "filesystem" },
         {
             "src": "/(.*)",
             "dest": "/api/index.php"
