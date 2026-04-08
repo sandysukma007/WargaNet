@@ -7,9 +7,14 @@ use App\Models\Ban;
 use Livewire\Volt\Component;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
+use Livewire\WithPagination;
 
 new class extends Component
 {
+    use WithPagination;
+
+    public $cursorName = 'posts-cursor';
+
     #[On('post-created')]
     #[Computed]
     public function posts()
@@ -17,7 +22,12 @@ new class extends Component
         return Post::with(['comments'])
             ->where('created_at', '>=', now()->subMonth())
             ->latest()
-            ->get();
+            ->cursorPaginate(12, ['*'], $this->cursorName);
+    }
+
+    public function nextPage()
+    {
+        $this->resetPage($this->cursorName);
     }
 
     #[Computed]
@@ -129,9 +139,9 @@ new class extends Component
             @php
                 $userAction = $this->userInteractions[$post->id] ?? null;
             @endphp
-            <article class="bg-white border-y sm:border sm:rounded-xl border-gray-200 overflow-hidden">
+            <article class="bg-white dark:bg-gray-900 border-y sm:border sm:rounded-xl border-gray-200 dark:border-gray-700 overflow-hidden">
                 <!-- Image -->
-                <div class="relative w-full bg-gray-100 flex justify-center items-center overflow-hidden max-h-[280px] sm:max-h-[420px] md:max-h-[560px]">
+                <div class="relative w-full bg-gray-100 dark:bg-gray-800 flex justify-center items-center overflow-hidden max-h-[280px] sm:max-h-[420px] md:max-h-[560px]">
                     <img src="{{ $post->image_url }}" alt="Post image"
                          class="w-full h-auto max-h-[280px] sm:max-h-[420px] md:max-h-[560px] object-contain"
                          loading="lazy">
@@ -143,12 +153,12 @@ new class extends Component
                     <div class="flex items-center gap-4 mb-3">
                         <button wire:click="like({{ $post->id }})" class="flex items-center gap-1.5 transition-all {{ $userAction === 'like' ? 'scale-110' : 'hover:scale-105' }}">
                            <span class="text-xl leading-none">{{ $userAction === 'like' ? '❤️' : '🤍' }}</span>
-                           <span class="text-sm font-semibold {{ $userAction === 'like' ? 'text-red-500' : 'text-gray-700' }}">{{ $post->likes }}</span>
+                           <span class="text-sm font-semibold {{ $userAction === 'like' ? 'text-red-500' : 'text-gray-700 dark:text-gray-300' }}">{{ $post->likes }}</span>
                         </button>
 
                         <button wire:click="dislike({{ $post->id }})" class="flex items-center gap-1.5 transition-all {{ $userAction === 'dislike' ? 'scale-110' : 'hover:scale-105' }}">
                            <span class="text-xl leading-none">{{ $userAction === 'dislike' ? '👎' : '👎🏻' }}</span>
-                           <span class="text-sm font-semibold {{ $userAction === 'dislike' ? 'text-gray-900' : 'text-gray-400' }}">{{ $post->dislikes }}</span>
+                           <span class="text-sm font-semibold {{ $userAction === 'dislike' ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500' }}">{{ $post->dislikes }}</span>
                         </button>
                     </div>
 
@@ -156,19 +166,19 @@ new class extends Component
                     @php
                         $caption   = $post->caption;
                         $isLong    = mb_strlen($caption) > 30;
-                        $short     = $isLong ? mb_substr($caption, 0, 30) : $caption;
+$short     = $isLong ? mb_substr($caption, 0, 30) : $caption;
                         $nickname  = 'Warga-' . substr(md5($post->ip_address ?? $post->id), 0, 4);
                     @endphp
-                    <div x-data="{ expanded: false }" class="text-gray-900 text-sm leading-relaxed mb-3">
-                        <span class="font-bold mr-1">{{ $nickname }}</span>
+                    <div x-data="{ expanded: false }" class="text-gray-900 dark:text-gray-100 text-sm leading-relaxed mb-3">
+<span class="font-bold mr-1">{{ $nickname }}</span>
 
                         @if($isLong)
                             {{-- Collapsed: show first 30 chars --}}
                             <span x-show="!expanded">
-                                {!! $this->renderCaption($short) !!}<span class="text-gray-400">...</span>
-                                <button @click="expanded = true"
-                                    class="text-gray-500 font-semibold ml-1 hover:text-gray-700 transition-colors text-xs">
-                                    Lihat selengkapnya
+                                {!! $this->renderCaption($short) !!}<span class="text-gray-400 dark:text-gray-500">...</span>
+button @click="expanded = true"
+                                    class="text-gray-500 dark:text-gray-400 font-semibold ml-1 hover:text-gray-700 dark:hover:text-gray-300 transition-colors text-xs">
+Lihat selengkapnya
                                 </button>
                             </span>
 
@@ -178,49 +188,59 @@ new class extends Component
                                 x-transition:enter-start="opacity-0 max-h-0"
                                 x-transition:enter-end="opacity-100 max-h-96"
                                 x-transition:leave="transition-all ease-in duration-200"
-                                x-transition:leave-start="opacity-100 max-h-96"
+x-transition:leave-start="opacity-100 max-h-96"
                                 x-transition:leave-end="opacity-0 max-h-0"
                                 class="overflow-hidden inline">
                                 {!! $this->renderCaption($caption) !!}
                                 <button @click="expanded = false"
-                                    class="text-gray-400 font-semibold ml-1 hover:text-gray-600 transition-colors text-xs block mt-0.5">
+                                    class="text-gray-400 dark:text-gray-500 font-semibold ml-1 hover:text-gray-600 dark:hover:text-gray-400 transition-colors text-xs block mt-0.5">
                                     Lihat sedikit
                                 </button>
                             </span>
                         @else
-                            {!! $this->renderCaption($caption) !!}
+{!! $this->renderCaption($caption) !!}
                         @endif
                     </div>
                     @endif
 
                     <!-- Comments -->
-                    <div class="space-y-1">
+<div class="space-y-1">
                         @if($post->comments->count() > 0)
-                            <div class="text-gray-500 text-[13px] mb-2">{{ $post->comments->count() }} komentar</div>
+                            <div class="text-gray-500 dark:text-gray-400 text-[13px] mb-2">{{ $post->comments->count() }} komentar</div>
                         @endif
-                        @foreach ($post->comments->take(3) as $comment)
-                            <p class="text-sm text-gray-900 leading-tight">
-                                <span class="font-bold mr-1">{{ $comment->nickname }}</span>{{ $comment->content }}
+@foreach ($post->comments->take(3) as $comment)
+                            <p class="text-sm text-gray-900 dark:text-gray-100 leading-tight">
+                                <span class="font-bold mr-1">{{ $comment->nickname }}</span>{{ $comment Asc ->content }}
                             </p>
                         @endforeach
 
-                        <div class="text-[11px] text-gray-400 uppercase tracking-wide mt-2 mb-1">
-                            {{ $post->created_at->format('d M Y') }}
+                        <div class="text-[11px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mt-2 mb-1">
+{{ $post->created_at->format('d M Y') }}
                         </div>
 
-                        @if (session()->has('comment_error'))
-                            <div class="text-xs font-semibold text-red-500 mt-1">{{ session('comment_error') }}</div>
+@if (session()->has('comment_error'))
+                            <div class="text-xs font-semibold text-red-500 dark:text-red-400 mt-1">{{ session('comment_error') }}</div>
                         @endif
 
-                        <div class="relative mt-2 pt-3 border-t border-gray-100">
+                        <div class="relative mt Asc -2 pt-3 border-t border-gray-100 dark:border-gray-700">
                             <input type="text"
                                    placeholder="Tambahkan komentar..."
-                                   x-on:keydown.enter="$wire.addComment({{ $post->id }}, $event.target.value); $event.target.value = ''"
-                                   class="w-full bg-transparent text-sm focus:ring-0 border-none outline-none p-0 text-gray-900 placeholder-gray-400">
+x-on:keydown.enter="$wire.addComment({{ $post->id }}, $event.target.value); $event.target.value = ''"
+placeholder-gray-400 dark:placeholder-gray-500">
                         </div>
                     </div>
-                </div>
+                </ Asc div>
             </article>
         @endforeach
+
+        @if ($posts->hasMorePages())
+            <div wire:infinite-scroll="nextPage" class="text-center py-8">
+h-6 w-6 border-b-2 border-gray-900"></div>
+            </div>
+        @endif
     </div>
+
+    @if ($posts->hasMorePages())
+        <div wire:infinite-scroll="nextPage"></div>
+    @endif
 </div>

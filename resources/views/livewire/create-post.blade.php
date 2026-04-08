@@ -12,7 +12,8 @@ new class extends Component
 {
     use WithFileUploads;
 
-    public $image;
+    public $rawImage;
+    public TemporaryUploadedFile $compressedImage = null;
     public $caption = '';
     public string $hashtagQuery = '';
     public bool $showSuggestions = false;
@@ -111,17 +112,17 @@ new class extends Component
         }
 
         $this->validate([
-            'image'   => 'required|image',
+            'compressedImage' => 'required|image',
             'caption' => 'nullable|string|max:1000',
         ]);
 
         try {
-            $extension = $this->image->getClientOriginalExtension() ?: 'jpg';
+            $extension = $this->compressedImage->getClientOriginalExtension() ?: 'jpg';
             $fileName  = time() . '_' . \Illuminate\Support\Str::random(10) . '.' . $extension;
             $path      = 'photos/' . $fileName;
 
             try {
-                $contents = Storage::disk('s3')->get($this->image->path());
+                $contents = Storage::disk('s3')->get($this->compressedImage->path());
                 Storage::disk('s3')->put($path, $contents);
             } catch (\Exception $e) {
                 throw new \Exception('Gagal mengunggah file ke Supabase: ' . $e->getMessage());
@@ -143,7 +144,7 @@ new class extends Component
             Cache::put('last_upload_' . $ip, true, now()->addHour());
             Cache::put('last_upload_time_' . $ip, now(), now()->addHour());
 
-            $this->reset(['image', 'caption', 'hashtagQuery', 'showSuggestions']);
+            $this->reset(['rawImage', 'compressedImage', 'caption', 'hashtagQuery', 'showSuggestions']);
             $this->dispatch('post-created');
 
         } catch (\Exception $e) {
@@ -153,7 +154,7 @@ new class extends Component
 };
 ?>
 
-<div class="bg-white p-4 sm:p-5 border-b border-gray-200 sm:rounded-xl sm:border sm:shadow-sm">
+<div class="bg-white dark:bg-gray-900 p-4 sm:p-5 border-b border-gray-200 dark:border-gray-700 sm:rounded-xl sm:border sm:shadow-sm dark:shadow-black/10">
 
     @php $blocked = $this->blocked; @endphp
 
@@ -174,15 +175,60 @@ new class extends Component
     <form wire:submit.prevent="save" class="space-y-4">
         <div class="flex items-start gap-4">
             <label class="flex-shrink-0 cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center h-[72px] w-[72px] hover:bg-gray-100 transition relative {{ $blocked['banned'] ? 'opacity-40 pointer-events-none' : '' }}">
-                @if ($image && !is_string($image) && $image->isPreviewable())
-                    <img src="{{ $image->temporaryUrl() }}" class="h-full w-full object-cover">
+                @if (($rawImage || $compressedImage) && ($compressedImage ? $compressedImage->isPreviewable() : true))
+                    <img id="image-preview" src="{{ $compressedImage ? $compressedImage->temporaryUrl() : '' }}" class="h-full w-full object-cover">
                 @else
                     <svg class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.5v15m7.5-7.5h-15" />
                     </svg>
                 @endif
-                <input type="file" wire:model="image" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" {{ $blocked['banned'] ? 'disabled' : '' }}>
+                <input type="file" id="image-input" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" {{ $blocked['banned'] ? 'disabled' : '' }}>
             </label>
+
+            <script>
+            document.getElementById('image-input').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+
+                        // Max dimension 1920px, maintain aspect
+                        const maxSize = 1920;
+                        let { width, height } = img;
+                        if (width > height) {
+                            if (width > maxSize) {
+                                height *= maxSize / width;
+                                width = maxSize;
+                            }
+                        } else {
+                            if (height > maxSize) {
+                                width *= maxSize / height;
+                                height = maxSize;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        canvas.toBlob(function(blob) {
+                            const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), { type: 'image/jpeg' });
+                            @this.set('rawImage', file.name); // Trigger reactivity
+                            @this.upload('compressedImage', compressedFile, (uploadedFilename) => {
+                                document.getElementById('image-preview').src = URL.createObjectURL(blob);
+                            });
+                        }, 'image/jpeg', 0.8);
+                    };
+                    img.src = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+            </script>
 
             <div class="flex-grow pt-1 relative">
                 <textarea
@@ -209,7 +255,8 @@ new class extends Component
             </div>
         </div>
 
-        @error('image') <span class="text-xs text-red-500 block">{{ $message }}</span> @enderror
+        @error('rawImage') <span class="text-xs text-red-500 block">{{ $message }}</span> @enderror
+        @error('compressedImage') <span class="text-xs text-red-500 block">{{ $message }}</span> @enderror
         @error('caption') <span class="text-xs text-red-500 block">{{ $message }}</span> @enderror
 
         {{-- Popular Hashtags --}}
