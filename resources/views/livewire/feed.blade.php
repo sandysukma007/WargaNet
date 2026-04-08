@@ -170,15 +170,15 @@ $short     = $isLong ? mb_substr($caption, 0, 30) : $caption;
                         $nickname  = 'Warga-' . substr(md5($post->ip_address ?? $post->id), 0, 4);
                     @endphp
                     <div x-data="{ expanded: false }" class="text-gray-900 dark:text-gray-100 text-sm leading-relaxed mb-3">
-<span class="font-bold mr-1">{{ $nickname }}</span>
+                            <span class="font-bold mr-1">{{ $nickname }}</span>
 
                         @if($isLong)
                             {{-- Collapsed: show first 30 chars --}}
                             <span x-show="!expanded">
                                 {!! $this->renderCaption($short) !!}<span class="text-gray-400 dark:text-gray-500">...</span>
-button @click="expanded = true"
+                                <button @click="expanded = true"
                                     class="text-gray-500 dark:text-gray-400 font-semibold ml-1 hover:text-gray-700 dark:hover:text-gray-300 transition-colors text-xs">
-Lihat selengkapnya
+                                    Lihat selengkapnya
                                 </button>
                             </span>
 
@@ -210,7 +210,7 @@ x-transition:leave-start="opacity-100 max-h-96"
                         @endif
 @foreach ($post->comments->take(3) as $comment)
                             <p class="text-sm text-gray-900 dark:text-gray-100 leading-tight">
-                                <span class="font-bold mr-1">{{ $comment->nickname }}</span>{{ $comment Asc ->content }}
+{{ $comment->content }}
                             </p>
                         @endforeach
 
@@ -222,20 +222,21 @@ x-transition:leave-start="opacity-100 max-h-96"
                             <div class="text-xs font-semibold text-red-500 dark:text-red-400 mt-1">{{ session('comment_error') }}</div>
                         @endif
 
-                        <div class="relative mt Asc -2 pt-3 border-t border-gray-100 dark:border-gray-700">
+                        <div class="relative mt-2 pt-3 border-t border-gray-100 dark:border-gray-700">
                             <input type="text"
                                    placeholder="Tambahkan komentar..."
-x-on:keydown.enter="$wire.addComment({{ $post->id }}, $event.target.value); $event.target.value = ''"
-placeholder-gray-400 dark:placeholder-gray-500">
+                                   class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-transparent placeholder-gray-400 dark:placeholder-gray-500"
+                                   x-on:keydown.enter="$wire.addComment({{ $post->id }}, $event.target.value); $event.target.value = ''">
                         </div>
                     </div>
-                </ Asc div>
+                </div>
+            </article>
             </article>
         @endforeach
 
         @if ($posts->hasMorePages())
-            <div wire:infinite-scroll="nextPage" class="text-center py-8">
-h-6 w-6 border-b-2 border-gray-900"></div>
+             <div wire:infinite-scroll="nextPage" class="text-center py-8">
+                <div class="animate-spin inline-block w-6 h-6 border-4 rounded-full border-gray-300 border-t-blue-600 mx-auto"></div>
             </div>
         @endif
     </div>
