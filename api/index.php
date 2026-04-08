@@ -24,7 +24,7 @@ foreach ($storagePaths as $path) {
 putenv("VIEW_COMPILED_PATH=$tmpPath/framework/views");
 putenv("SESSION_DRIVER=cookie");
 putenv("LOG_CHANNEL=stderr");
-putenv("LIVEWIRE_MANIFEST_PATH=$cachePath/livewire-components.php");
+putenv("LIVEWIRE_MANIFEST_PATH=$tmpPath/framework/cache/livewire-components.php");
 
 // Forward Vercel requests to the normal Laravel index.php
 require __DIR__ . '/../public/index.php';
