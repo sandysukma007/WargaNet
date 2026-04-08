@@ -14,7 +14,7 @@ new class extends Component
     use WithFileUploads;
 
     public $rawImage;
-    public ?TemporaryUploadedFile $compressedImage = null;
+    public $compressedImage;
     public $caption = '';
     public string $hashtagQuery = '';
     public bool $showSuggestions = false;
@@ -112,18 +112,29 @@ new class extends Component
             return;
         }
 
+        if (!$this->compressedImage) {
+            $this->dispatch('error', message: 'Gambar wajib diunggah.');
+            return;
+        }
+
         $this->validate([
-            'compressedImage' => 'required|image',
+            'compressedImage' => 'image|max:5120', // 5MB max
             'caption' => 'nullable|string|max:1000',
         ]);
 
         try {
-            $extension = $this->compressedImage->getClientOriginalExtension() ?: 'jpg';
+            $extension = $this->compressedImage->getClientOriginalExtension() ?? pathinfo($this->compressedImage->getClientOriginalName() ?? 'image.jpg', PATHINFO_EXTENSION) ?: 'jpg';
             $fileName  = time() . '_' . \Illuminate\Support\Str::random(10) . '.' . $extension;
             $path      = 'photos/' . $fileName;
 
             try {
-                $contents = Storage::disk('s3')->get($this->compressedImage->path());
+                if (method_exists($this->compressedImage, 'path')) {
+                    // Livewire TemporaryUploadedFile
+                    $contents = Storage::disk('s3')->get($this->compressedImage->path());
+                } else {
+                    // Browser File object from JS compression
+                    $contents = file_get_contents($this->compressedImage->getPathname());
+                }
                 Storage::disk('s3')->put($path, $contents);
             } catch (\Exception $e) {
                 throw new \Exception('Gagal mengunggah file ke Supabase: ' . $e->getMessage());
