@@ -5,7 +5,14 @@
         "api/index.php": { "runtime": "vercel-php@0.9.0" }
     },
     "routes": [
-        { "handle": "filesystem" },
+        {
+            "src": "/build/(.*)",
+            "dest": "/public/build/$1"
+        },
+        {
+            "src": "/(css|js|images|favicon.ico|robots.txt|storage|assets)/(.*)",
+            "dest": "/public/$1/$2"
+        },
         {
             "src": "/(.*)",
             "dest": "/api/index.php"
@@ -25,7 +32,5 @@
         "APP_PACKAGES_CACHE": "/tmp/packages.php",
         "APP_ROUTES_CACHE": "/tmp/routes.php",
         "APP_SERVICES_CACHE": "/tmp/services.php"
-    },
-    "buildCommand": "npm run build",
-    "outputDirectory": "public"
+    }
 }
