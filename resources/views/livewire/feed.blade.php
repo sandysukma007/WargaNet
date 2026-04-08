@@ -122,9 +122,10 @@ new class extends Component
             @endphp
             <article class="bg-white border-y sm:border sm:rounded-xl border-gray-200 overflow-hidden">
                 <!-- Image Wrapper -->
-                <div class="relative w-full overflow-hidden bg-gray-50 flex justify-center items-center">
-                    <!-- Maintain aspect, max-height 700px, no aggressive cropping -->
-                    <img src="{{ $post->image_url }}" alt="Post image" class="w-full h-auto max-h-[700px] object-contain" loading="lazy">
+                <div class="relative w-full bg-gray-100 flex justify-center items-center overflow-hidden max-h-[280px] sm:max-h-[420px] md:max-h-[560px]">
+                    <img src="{{ $post->image_url }}" alt="Post image"
+                         class="w-full h-auto max-h-[280px] sm:max-h-[420px] md:max-h-[560px] object-contain"
+                         loading="lazy">
                 </div>
 
                 <!-- Post Content -->
