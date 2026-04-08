@@ -61,7 +61,7 @@
                             <span class="text-xl">🔔</span>
                             <span x-show="unreadCount > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center text-xs font-bold">{{ unreadCount }}</span>
                         </button>
-                        <div x-show="showDropdown" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl z-50 py-2 max-h-96 overflow-y-auto">
+<div x-show="showDropdown" x-transition class="notification-dropdown">
                             <div class="px-4 py-2 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
                                 <h3 class="font-semibold text-gray-900 dark:text-white">Notifikasi</h3>
                                 <button @click="markAsRead(); showDropdown = false" class="text-sm text-blue-600 hover:text-blue-500 font-medium">Tandai semua dibaca</button>
@@ -72,7 +72,7 @@
                                 </div>
                             </template>
                             <template x-for="notif in notifications.slice(0,10)" :key="notif.time">
-                                <div class="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors border-b border-gray-50 dark:border-gray-800 last:border-b-0">
+<div class="notification-item">
                                     <div class="flex items-start gap-3">
                                         <span class="flex-shrink-0 mt-0.5 text-lg">
                                             <template x-if="notif.type === 'like'">

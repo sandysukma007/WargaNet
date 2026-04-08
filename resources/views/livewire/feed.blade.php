@@ -149,7 +149,7 @@ new class extends Component
             @php
                 $userAction = $this->userInteractions[$post->id] ?? null;
             @endphp
-            <article class="bg-white dark:bg-gray-900 border-y sm:border sm:rounded-xl border-gray-200 dark:border-gray-700 overflow-hidden">
+            <article class="post-card">
                 <!-- Image -->
                 <div class="relative w-full bg-gray-100 dark:bg-gray-800 flex justify-center items-center overflow-hidden max-h-[280px] sm:max-h-[420px] md:max-h-[560px]">
                     <img src="{{ $post->image_url }}" alt="Post image"
@@ -161,12 +161,12 @@ new class extends Component
                 <div class="p-4 sm:p-5">
                     <!-- Interactions -->
                     <div class="flex items-center gap-4 mb-3">
-                        <button wire:click="like({{ $post->id }})" class="flex items-center gap-1.5 transition-all {{ $userAction === 'like' ? 'scale-110' : 'hover:scale-105' }}">
+                        <button wire:click="like({{ $post->id }})" class="action-btn {{ $userAction === 'like' ? 'action-btn-active' : '' }}">
                            <span class="text-xl leading-none">{{ $userAction === 'like' ? '❤️' : '🤍' }}</span>
                            <span class="text-sm font-semibold {{ $userAction === 'like' ? 'text-red-500' : 'text-gray-700 dark:text-gray-300' }}">{{ $post->likes }}</span>
                         </button>
 
-                        <button wire:click="dislike({{ $post->id }})" class="flex items-center gap-1.5 transition-all {{ $userAction === 'dislike' ? 'scale-110' : 'hover:scale-105' }}">
+                        <button wire:click="dislike({{ $post->id }})" class="action-btn {{ $userAction === 'dislike' ? 'action-btn-active' : '' }}">
                            <span class="text-xl leading-none">{{ $userAction === 'dislike' ? '👎' : '👎🏻' }}</span>
                            <span class="text-sm font-semibold {{ $userAction === 'dislike' ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500' }}">{{ $post->dislikes }}</span>
                         </button>
@@ -179,7 +179,7 @@ new class extends Component
 $short     = $isLong ? mb_substr($caption, 0, 30) : $caption;
                         $nickname  = 'Warga-' . substr(md5($post->ip_address ?? $post->id), 0, 4);
                     @endphp
-                    <div x-data="{ expanded: false }" class="text-gray-900 dark:text-gray-100 text-sm leading-relaxed mb-3">
+                    <div x-data="{ expanded: false }" class="caption-container">
                             <span class="font-bold mr-1">{{ $nickname }}</span>
 
                         @if($isLong)
@@ -234,12 +234,11 @@ x-transition:leave-start="opacity-100 max-h-96"
                         <div class="relative mt-2 pt-3 border-t border-gray-100 dark:border-gray-700">
                             <input type="text"
                                    placeholder="Tambahkan komentar..."
-                                   class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-transparent placeholder-gray-400 dark:placeholder-gray-500"
+                                   class="comment-input"
                                    x-on:keydown.enter="$wire.addComment({{ $post->id }}, $event.target.value); $event.target.value = ''">
                         </div>
                     </div>
                 </div>
-            </article>
             </article>
         @endforeach
 

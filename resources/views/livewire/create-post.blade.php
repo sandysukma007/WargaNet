@@ -188,7 +188,7 @@ new class extends Component
 
     <form wire:submit.prevent="save" class="space-y-4">
         <div class="flex items-start gap-4">
-            <label class="flex-shrink-0 cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center h-[72px] w-[72px] hover:bg-gray-100 transition relative {{ $blocked['banned'] ? 'opacity-40 pointer-events-none' : '' }}">
+class="image-upload-btn {{ $blocked['banned'] ? 'image-upload-disabled' : '' }}">
                 @if (($rawImage || $compressedImage) && ($compressedImage ? $compressedImage->isPreviewable() : true))
                     <img id="image-preview" src="{{ $compressedImage ? $compressedImage->temporaryUrl() : '' }}" class="h-full w-full object-cover">
                 @else
@@ -258,8 +258,8 @@ new class extends Component
                     <div class="absolute z-20 left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
                         @foreach ($this->hashtagSuggestions as $tag)
                             <button type="button"
-                                wire:click="appendHashtag('{{ $tag->name }}')"
-                                class="w-full flex items-center justify-between px-3 py-2 text-sm hover:bg-gray-50 text-left transition-colors">
+wire:click="appendHashtag('{{ $tag->name }}')"
+                                class="hashtag-suggestion">
                                 <span class="font-medium text-blue-600">#{{ $tag->name }}</span>
                                 <span class="text-xs text-gray-400 bg-gray-100 rounded-full px-2 py-0.5">{{ $tag->count }}x</span>
                             </button>
@@ -279,7 +279,7 @@ new class extends Component
                 @foreach ($this->popularHashtags as $tag)
                     <button type="button"
                         wire:click="appendHashtag('{{ $tag->name }}')"
-                        class="inline-flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full px-2.5 py-1 transition-colors">
+                        class="hashtag-chip">
                         <span class="text-blue-500 font-semibold">#{{ $tag->name }}</span>
                         <span class="text-gray-400">{{ $tag->count }}</span>
                     </button>
