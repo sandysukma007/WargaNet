@@ -21,11 +21,15 @@ new class extends Component
 
         try {
             // Upload to Supabase Storage (S3 Disk)
-            $fileName = time() . '_' . $this->image->getClientOriginalName();
+            // Use a clean, random filename to avoid special characters breaking Supabase Storage
+            $extension = $this->image->getClientOriginalExtension() ?: 'jpg';
+            $fileName = time() . '_' . \Illuminate\Support\Str::random(10) . '.' . $extension;
+            $path = 'photos/' . $fileName;
             
             try {
-                // Use Livewire's native storeAs method which natively supports copying from S3 tmp to S3 destination
-                $path = $this->image->storeAs('photos', $fileName, 's3');
+                // Manually fetch the content and put it, bypassing the buggy S3 CopyObject API in Supabase
+                $contents = Storage::disk('s3')->get($this->image->path());
+                Storage::disk('s3')->put($path, $contents);
             } catch (\Exception $e) {
                 throw new \Exception('Gagal mengunggah file ke Supabase: ' . $e->getMessage());
             }
