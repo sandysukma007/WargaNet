@@ -17,28 +17,20 @@
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="bg-slate-50 text-slate-900 antialiased selection:bg-indigo-100 selection:text-indigo-700">
-        <header class="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/80 backdrop-blur-md">
-            <div class="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
-                <div class="flex items-center gap-2">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 font-bold text-white shadow-lg shadow-indigo-200">
-                        SD
-                    </div>
-                    <span class="text-xl font-bold tracking-tight text-slate-800">SuaraDinding</span>
-                </div>
-                <div class="text-sm font-medium text-slate-500">
-                    Bebas Bersuara, Tanpa Nama.
-                </div>
+    <body class="bg-gray-50 text-gray-900 antialiased selection:bg-gray-200 selection:text-black">
+        <header class="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/90 backdrop-blur-md">
+            <div class="mx-auto flex h-14 max-w-xl items-center gap-2 px-4">
+                <span class="text-xl font-bold tracking-tight text-black">Warga Net</span>
             </div>
         </header>
 
-        <main class="mx-auto min-h-screen max-w-5xl p-4 sm:p-6 lg:p-8">
+        <main class="mx-auto min-h-screen max-w-xl sm:py-6 sm:px-4">
             {{ $slot }}
         </main>
 
-        <footer class="mt-20 border-t border-slate-200 py-10">
-            <div class="mx-auto max-w-5xl px-4 text-center">
-                <p class="text-sm text-slate-400">&copy; 2026 SuaraDinding. Dibuat dengan cinta & Laravel 12.</p>
+        <footer class="mt-12 border-t border-gray-200 py-8 bg-white">
+            <div class="mx-auto max-w-xl px-4 text-center">
+                <p class="text-xs text-gray-400">&copy; {{ date('Y') }} Warga Net. Bebas bersuara, tanpa nama.</p>
             </div>
         </footer>
     </body>

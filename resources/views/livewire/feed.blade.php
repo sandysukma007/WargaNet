@@ -67,75 +67,59 @@ new class extends Component
 };
 ?>
 
-<div class="space-y-12 pb-20">
+<div class="space-y-6 pb-20">
     <!-- Header/Create Post Section -->
-    <div class="rounded-3xl bg-indigo-600 p-8 text-white shadow-2xl shadow-indigo-200">
-        <h2 class="text-3xl font-bold tracking-tight">Apa yang terjadi di sekitarmu?</h2>
-        <p class="mt-2 text-indigo-100 opacity-90 text-lg">Bagikan pemikiranmu secara anonim ke seluruh dunia.</p>
-
-        <div class="mt-8">
-            <livewire:create-post />
-        </div>
-    </div>
+    <livewire:create-post />
 
     <!-- Feed Section -->
-    <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-1 max-w-2xl mx-auto">
+    <div class="space-y-6">
         @foreach ($this->posts as $post)
-            <article class="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-xl hover:shadow-slate-200/50">
+            <article class="bg-white border-y sm:border sm:rounded-xl border-gray-200 overflow-hidden">
                 <!-- Image Wrapper -->
-                <div class="relative aspect-video w-full overflow-hidden bg-slate-100">
-                    <img src="{{ $post->image_url }}" alt="Post image" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
+                <div class="relative w-full bg-gray-50 aspect-square">
+                    <img src="{{ $post->image_url }}" alt="Post image" class="h-full w-full object-cover">
                 </div>
 
                 <!-- Post Content -->
-                <div class="p-6">
-                    <p class="text-slate-800 text-lg leading-relaxed">{{ $post->caption }}</p>
-
+                <div class="p-4 sm:p-5">
                     <!-- Interactions -->
-                    <div class="mt-8 flex items-center justify-between border-t border-slate-100 pt-6">
-                        <div class="flex items-center gap-6">
-                            <button wire:click="like({{ $post->id }})" class="flex items-center gap-2 font-semibold text-slate-500 transition-colors hover:text-emerald-500">
-                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.5c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 012.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 00.322-1.672V3a.75.75 0 01.75-.75A2.25 2.25 0 0116.5 4.5c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 01-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 00-1.423-.23H5.904M14.25 9h2.25M5.904 18.75c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 01-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 10.203 4.167 9.75 5 9.75h1.053c.472 0 .745.551.5.96a12.204 12.204 0 00-1.5 4.125 12.01 12.01 0 00.351 3.915z" />
-                                </svg>
-                                <span>{{ $post->likes }}</span>
-                            </button>
-
-                            <button wire:click="dislike({{ $post->id }})" class="flex items-center gap-2 font-semibold text-slate-500 transition-colors hover:text-rose-500">
-                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.367 13.5c-.806 0-1.533.446-2.031 1.08a9.041 9.041 0 0 1-2.861 2.4c-.723.384-1.35.956-1.653 1.715a4.498 4.498 0 0 0-.322 1.672V21a.75.75 0 0 1-.75.75A2.25 2.25 0 0 1 7.5 19.5c0-1.152.26-2.243.723-3.218.266-.558-.107-1.282-.725-1.282H4.372c-1.026 0-1.945-.694-2.054-1.715a12.155 12.155 0 0 1-.068-1.285c0-2.843.992-5.454 2.649-7.521.388-.482.987-.729 1.605-.729H10.52c.483 0 .964.078 1.423.23l3.114 1.04a4.501 4.501 0 0 0 1.423.23H18.096c-.083-.205-.173-.405-.27-.602-.197-.4.078-.898.523-.898h.908c.889 0 1.713.518 1.972 1.368a12 12 0 0 1 .521 3.507c0 1.553-.295 3.036-.831 4.398-.213.547-.993 1-1.826 1h-1.053c-.472 0-.745-.551-.5-.96a12.204 12.204 0 0 0 1.5-4.125 12.01 12.01 0 0 0-.351-3.915z" />
-                                </svg>
-                                <span>{{ $post->dislikes }}</span>
-                            </button>
-                        </div>
-
-                        <div class="text-sm font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">
-                            {{ $post->comments->count() }} Komentar
-                        </div>
+                    <div class="flex items-center gap-4 mb-3">
+                        <button wire:click="like({{ $post->id }})" class="flex items-center gap-1.5 text-gray-900 transition-colors pointer hover:text-gray-500">
+                           <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                               <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                           </svg>
+                           <span class="text-sm font-semibold">{{ $post->likes }}</span>
+                        </button>
+                        <button wire:click="dislike({{ $post->id }})" class="flex items-center gap-1.5 text-gray-900 transition-colors pointer hover:text-gray-500">
+                           <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                               <path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 011.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 01-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 01-.12-1.45l.527-.737c.25-.35.273-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.107-1.204l-.527-.738a1.125 1.125 0 01.12-1.45l.773-.773a1.125 1.125 0 011.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894z" />
+                               <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                           </svg>
+                           <span class="text-sm font-semibold">{{ $post->dislikes }}</span>
+                        </button>
                     </div>
 
+                    @if($post->caption)
+                    <p class="text-gray-900 text-sm leading-relaxed mb-3"><span class="font-bold mr-1">anonim</span> {{ $post->caption }}</p>
+                    @endif
+
                     <!-- Comments List -->
-                    <div class="mt-8 space-y-4">
+                    <div class="space-y-1">
+                        @if($post->comments->count() > 0)
+                            <div class="text-gray-500 text-[13px] mb-2 mt-2">Lihat semua {{ $post->comments->count() }} komentar</div>
+                        @endif
                         @foreach ($post->comments as $comment)
-                            <div class="rounded-2xl bg-slate-50 p-4 border border-slate-100">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">{{ $comment->nickname }}</span>
-                                </div>
-                                <p class="text-slate-600">{{ $comment->content }}</p>
-                            </div>
+                            <p class="text-sm text-gray-900 leading-tight">
+                                <span class="font-bold mr-1">{{ $comment->nickname }}</span>{{ $comment->content }}
+                            </p>
                         @endforeach
 
                         <!-- Comment Input -->
-                        <div class="relative mt-6">
+                        <div class="relative mt-3 pt-3 border-t border-gray-100">
                             <input type="text"
-                                   placeholder="Tulis balasan..."
+                                   placeholder="Tambahkan komentar..."
                                    x-on:keydown.enter="$wire.addComment({{ $post->id }}, $event.target.value); $event.target.value = ''"
-                                   class="w-full rounded-2xl border-slate-100 bg-slate-50 py-3 pl-4 pr-12 text-sm focus:border-indigo-300 focus:ring-0">
-                            <div class="absolute right-4 top-1/2 -translate-y-1/2">
-                                <svg class="h-5 w-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                                </svg>
-                            </div>
+                                   class="w-full bg-transparent text-sm focus:ring-0 border-none outline-none p-0 text-gray-900 placeholder-gray-400">
                         </div>
                     </div>
                 </div>
