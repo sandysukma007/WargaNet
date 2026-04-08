@@ -129,7 +129,7 @@ return [
     */
 
     'temporary_file_upload' => [
-        'disk' => 'tmp',
+        'disk' => env('VERCEL') ? 's3' : 'tmp',
         'rules' => null,
         'directory' => 'livewire-tmp',
         'middleware' => null,                                 // Example: 'throttle:5,1'            | Default: 'throttle:60,1'

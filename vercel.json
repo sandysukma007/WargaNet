@@ -2,8 +2,13 @@
     "version": 2,
     "framework": null,
     "functions": {
-        "api/index.php": { "runtime": "vercel-php@0.9.0" }
+        "api/index.php": {
+            "runtime": "vercel-php@0.9.0",
+            "memory": 1024,
+            "maxDuration": 15
+        }
     },
+    "regions": ["hnd1"],
     "routes": [
         {
             "src": "/(build|css|js|images|storage|assets)(/.*)?",
