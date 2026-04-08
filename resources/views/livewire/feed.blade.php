@@ -16,12 +16,23 @@ new class extends Component
         return Post::with(['comments'])->latest()->get();
     }
 
+    #[Computed]
+    public function userInteractions()
+    {
+        return Interaction::where('ip_address', request()->ip())
+            ->pluck('type', 'post_id')
+            ->toArray();
+    }
+
     public function like($postId)
     {
         $ip = request()->ip();
         $existing = Interaction::where('post_id', $postId)->where('ip_address', $ip)->first();
 
         if ($existing && $existing->type === 'like') {
+            // Unlike it
+            $existing->delete();
+            Post::find($postId)->decrement('likes');
             return;
         }
 
@@ -41,6 +52,9 @@ new class extends Component
         $existing = Interaction::where('post_id', $postId)->where('ip_address', $ip)->first();
 
         if ($existing && $existing->type === 'dislike') {
+            // Undislike it
+            $existing->delete();
+            Post::find($postId)->decrement('dislikes');
             return;
         }
 
@@ -74,33 +88,38 @@ new class extends Component
     <!-- Feed Section -->
     <div class="space-y-6">
         @foreach ($this->posts as $post)
+            @php
+                $userAction = $this->userInteractions[$post->id] ?? null;
+            @endphp
             <article class="bg-white border-y sm:border sm:rounded-xl border-gray-200 overflow-hidden">
                 <!-- Image Wrapper -->
-                <div class="relative w-full bg-gray-50 aspect-square">
-                    <img src="{{ $post->image_url }}" alt="Post image" class="h-full w-full object-cover">
+                <div class="relative w-full overflow-hidden bg-gray-50 flex justify-center items-center">
+                    <!-- Maintain aspect, max-height 700px, no aggressive cropping -->
+                    <img src="{{ $post->image_url }}" alt="Post image" class="w-full h-auto max-h-[700px] object-contain" loading="lazy">
                 </div>
 
                 <!-- Post Content -->
                 <div class="p-4 sm:p-5">
                     <!-- Interactions -->
                     <div class="flex items-center gap-4 mb-3">
-                        <button wire:click="like({{ $post->id }})" class="flex items-center gap-1.5 text-gray-900 transition-colors pointer hover:text-gray-500">
-                           <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <button wire:click="like({{ $post->id }})" class="flex items-center gap-1.5 transition-colors pointer {{ $userAction === 'like' ? 'text-red-500' : 'text-gray-900 hover:text-gray-500' }}">
+                           <svg class="h-6 w-6" fill="{{ $userAction === 'like' ? 'currentColor' : 'none' }}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
                            </svg>
                            <span class="text-sm font-semibold">{{ $post->likes }}</span>
                         </button>
-                        <button wire:click="dislike({{ $post->id }})" class="flex items-center gap-1.5 text-gray-900 transition-colors pointer hover:text-gray-500">
-                           <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                               <path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 011.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 01-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 01-.12-1.45l.527-.737c.25-.35.273-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.107-1.204l-.527-.738a1.125 1.125 0 01.12-1.45l.773-.773a1.125 1.125 0 011.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894z" />
-                               <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        
+                        <button wire:click="dislike({{ $post->id }})" class="flex items-center gap-1.5 transition-colors pointer {{ $userAction === 'dislike' ? 'text-black' : 'text-gray-900 hover:text-gray-500' }}">
+                           <!-- Hand Thumb Down Icon -->
+                           <svg class="h-6 w-6" fill="{{ $userAction === 'dislike' ? 'currentColor' : 'none' }}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                               <path stroke-linecap="round" stroke-linejoin="round" d="M7.498 15.25H4.372c-1.026 0-1.945-.694-2.054-1.715a12.209 12.209 0 0 1-.068-1.285c0-2.843.992-5.454 2.649-7.521C5.313 4.247 5.912 4 6.53 4h2.88c.483 0 .964.078 1.423.23l3.114 1.04a4.501 4.501 0 0 0 1.423.23h1.294v-.008h-.008v.008c-.083-.205-.173-.405-.27-.602-.197-.4.078-.898.523-.898h.908c.889 0 1.713.518 1.972 1.368a12 12 0 0 1 .521 3.507c0 1.553-.295 3.036-.831 4.398C20.613 14.547 19.833 15 19 15h-1.053c-.472 0-.745-.551-.5-.96a12.204 12.204 0 0 0 1.5-4.125 12.01 12.01 0 0 0-.351-3.915Z" />
                            </svg>
                            <span class="text-sm font-semibold">{{ $post->dislikes }}</span>
                         </button>
                     </div>
 
                     @if($post->caption)
-                    <p class="text-gray-900 text-sm leading-relaxed mb-3"><span class="font-bold mr-1">anonim</span> {{ $post->caption }}</p>
+                    <p class="text-gray-900 text-sm leading-relaxed mb-3"><span class="font-bold mr-1">{{ $post->comments->firstWhere('nickname', '!=', '') ? 'Warga-' . substr(md5($post->id), 0, 4) : 'anonim' }}</span> {{ $post->caption }}</p>
                     @endif
 
                     <!-- Comments List -->
