@@ -10,15 +10,18 @@ putenv('APP_DEBUG=true');
 
 // Ensure Laravel uses /tmp for all writable directories
 $tmpPath = '/tmp';
-$viewPath = "$tmpPath/views";
-$cachePath = "$tmpPath/cache";
-$sessionPath = "$tmpPath/sessions";
+$storagePaths = [
+    "$tmpPath/framework/views",
+    "$tmpPath/framework/sessions",
+    "$tmpPath/framework/cache",
+    "$tmpPath/logs",
+];
 
-foreach ([$viewPath, $cachePath, $sessionPath] as $path) {
+foreach ($storagePaths as $path) {
     if (!is_dir($path)) { mkdir($path, 0777, true); }
 }
 
-putenv("VIEW_COMPILED_PATH=$viewPath");
+putenv("VIEW_COMPILED_PATH=$tmpPath/framework/views");
 putenv("SESSION_DRIVER=cookie");
 putenv("LOG_CHANNEL=stderr");
 putenv("LIVEWIRE_MANIFEST_PATH=$cachePath/livewire-components.php");
