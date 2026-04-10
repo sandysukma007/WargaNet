@@ -136,7 +136,8 @@ new class extends Component
         );
     }
 };
->
+?>
+
 <div class="space-y-6 pb-20">
     <!-- Create Post -->
     <livewire:create-post />

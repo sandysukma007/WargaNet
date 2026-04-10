@@ -188,7 +188,8 @@ new class extends Component
 
     <form wire:submit.prevent="save" class="space-y-4">
         <div class="flex items-start gap-4">
-class="image-upload-btn {{ $blocked['banned'] ? 'image-upload-disabled' : '' }}">
+            <label for="image-input" 
+                class="image-upload-btn {{ $blocked['banned'] ? 'image-upload-disabled' : '' }}">
                 @if (($rawImage || $compressedImage) && ($compressedImage ? $compressedImage->isPreviewable() : true))
                     <img id="image-preview" src="{{ $compressedImage ? $compressedImage->temporaryUrl() : '' }}" class="h-full w-full object-cover">
                 @else
