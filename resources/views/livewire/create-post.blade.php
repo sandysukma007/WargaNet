@@ -20,13 +20,7 @@ new class extends Component
     public string $hashtagQuery = '';
     public bool $showSuggestions = false;
 
-    // Computed to get the first image for backward compatibility if needed,
-    // but better to use compressedImages directly in the view.
-    #[Computed]
-    public function firstImage()
-    {
-        return count($this->compressedImages) > 0 ? $this->compressedImages[0] : null;
-    }
+
 
     #[Computed]
     public function blocked(): array
@@ -115,6 +109,12 @@ new class extends Component
         }
         $this->compressedImages[] = $this->currentImage;
         $this->currentImage = null;
+    }
+
+    public function removeImage($index): void
+    {
+        unset($this->compressedImages[$index]);
+        $this->compressedImages = array_values($this->compressedImages);
     }
 
     public function save()
@@ -236,42 +236,44 @@ new class extends Component
         <div class="flex gap-4 items-start">
             {{-- Left Side: Preview Section --}}
             <div class="flex-shrink-0" style="width: 100px; height: 100px; min-width: 100px; min-height: 100px;">
-                @php $imageCount = count($this->compressedImages); @endphp
+                @php
+                    $imageCount = count($this->compressedImages);
+                    $displayImages = array_slice($this->compressedImages, 0, 4);
+                    $hiddenCount = $imageCount - 4;
+                @endphp
                 @if ($imageCount > 0)
-                    <div x-data="{
-                        activeSlide: 0,
-                        slides: {{ $imageCount }},
-                        next() { this.activeSlide = (this.activeSlide + 1) % this.slides },
-                        prev() { this.activeSlide = (this.activeSlide - 1 + this.slides) % this.slides }
-                    }"
-                    class="relative w-full h-full rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 group shadow-sm hover:shadow-md">
-
-                        {{-- Images --}}
-                        <div class="h-full flex transition-transform duration-300 ease-out"
-                             :style="'width: ' + (slides * 100) + '%; transform: translateX(-' + (activeSlide * (100 / slides)) + '%)'">
-                            @foreach ($this->compressedImages as $index => $image)
-                                <div class="h-full flex-shrink-0 flex items-center justify-center bg-gray-50 dark:bg-gray-800" style="width: {{ 100 / $imageCount }}%">
-                                    <img src="{{ $image->temporaryUrl() }}" class="h-full w-full object-cover">
+                    <div class="relative w-full h-full rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 shadow-sm hover:shadow-md group">
+                        <div class="grid grid-cols-2 gap-1 h-full p-1">
+                            @foreach ($displayImages as $index => $image)
+                                <div class="relative rounded overflow-hidden bg-gray-100 dark:bg-gray-700 h-full min-h-[24px]">
+                                    <img src="{{ $image->temporaryUrl() }}" class="w-full h-full object-cover" alt="Preview {{ $index + 1 }}">
+                                    <button wire:click="removeImage({{ $index }})" type="button"
+                                        class="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 text-white w-4 h-4 rounded-full flex items-center justify-center text-xs shadow-md z-20 transition-all"
+                                        title="Hapus foto ini">
+                                        <span class="leading-none">×</span>
+                                    </button>
                                 </div>
                             @endforeach
+                            @if ($hiddenCount > 0)
+                                <div class="col-span-2 relative rounded overflow-hidden bg-gray-200 dark:bg-gray-700 h-full flex items-center justify-center">
+                                    <span class="text-xs font-bold text-gray-500 dark:text-gray-400">+{{ $hiddenCount }} lagi</span>
+                                </div>
+                            @else
+                                @for ($i = count($displayImages); $i < 4; $i++)
+                                    <div class="bg-gray-100 dark:bg-gray-700 rounded"></div>
+                                @endfor
+                            @endif
                         </div>
-
-                        {{-- Indicators --}}
-                        <template x-if="slides > 1">
-                            <div class="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1 z-10">
-                                <template x-for="i in slides" :key="i-1">
-                                    <div class="h-0.5 w-0.5 rounded-full transition-all" :class="activeSlide === (i-1) ? 'bg-blue-500 w-2' : 'bg-gray-300 dark:bg-gray-600'"></div>
-                                </template>
-                            </div>
-                        </template>
-
                         {{-- Remove All Button --}}
-                        <button type="button" @click="$wire.set('compressedImages', []); $wire.set('rawImage', null)"
-                            class="absolute top-1 right-1 bg-black/40 hover:bg-black/60 text-white p-0.5 rounded-full backdrop-blur-sm transition z-10">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
+                        @if ($imageCount > 0)
+                            <button wire:click="$set('compressedImages', [])" type="button"
+                                class="absolute top-1 right-1 bg-black/50 hover:bg-black/70 text-white p-1 rounded-full backdrop-blur transition-all z-30 text-xs shadow-lg"
+                                title="Hapus semua foto">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        @endif
                     </div>
                 @else
                     {{-- Empty State --}}
@@ -313,11 +315,18 @@ new class extends Component
 
             @if (!$blocked['banned'])
                 <button type="submit"
-                    class="rounded-lg bg-blue-600 hover:bg-blue-700 px-6 py-2 text-xs font-bold text-white shadow-sm transition-all active:scale-95 disabled:bg-gray-200 dark:disabled:bg-gray-800 disabled:text-gray-400"
+                    class="inline-flex items-center gap-1 rounded-lg bg-blue-600 hover:bg-blue-700 px-6 py-2 text-xs font-bold text-white shadow-sm transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed data-[disabled]:bg-gray-300 dark:data-[disabled]:bg-gray-700"
                     wire:loading.attr="disabled"
-                    {{ (count($this->compressedImages) === 0 && empty(trim($this->caption))) ? 'disabled' : '' }}>
-                    <span wire:loading.remove wire:target="save">Posting</span>
-                    <span wire:loading wire:target="save">...</span>
+                    {{ (count($this->compressedImages) === 0 && empty(trim($this->caption))) ? 'data-[disabled=true]' : '' }}
+                    wire:target="save">
+                    <span wire:loading.remove>Posting</span>
+                    <span wire:loading>
+                        <svg class="animate-spin -ml-1 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Memproses...
+                    </span>
                 </button>
             @endif
         </div>

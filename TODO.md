@@ -1,8 +1,8 @@
-# Task: Hapus border card, gunakan shadow saja + buat size lebih minimalis
+# Fix Create Post Component
 
 ## Steps:
-- [x] Step 1: Edit resources/views/livewire/feed.blade.php (remove borders, enhance shadows, reduce sizes/paddings)
-- [x] Step 2: Edit resources/views/livewire/create-post.blade.php (remove borders on image preview/empty, add shadows, reduce paddings/heights)
-- [x] Step 3: Rebuild Tailwind/Vite assets (fixed CSS @utility nesting error)
-- [x] Step 4: Test & complete
-
+- [x] Step 1: Add removeImage() method to PHP class
+- [x] Step 2: Rewrite photo preview to grid layout (2 cols, max 4 shown + badge)
+- [x] Step 3: Fix submit button (spinner, disabled states)
+- [x] Step 4: Test functionality (changes applied, test manually)
+- [x] Step 5: Complete
