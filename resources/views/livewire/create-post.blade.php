@@ -199,26 +199,25 @@ new class extends Component
 };
 ?>
 
-<div>
-    <div class="bg-white dark:bg-gray-900 p-4 sm:p-5 border-b border-gray-200 dark:border-gray-700 sm:rounded-xl sm:border sm:shadow-sm dark:shadow-black/10">
+<div class="bg-white dark:bg-gray-900 p-4 sm:p-5 border-b border-gray-200 dark:border-gray-700 sm:rounded-xl sm:border sm:shadow-sm dark:shadow-black/10">
 
-        @php $blocked = $this->blocked; @endphp
+    @php $blocked = $this->blocked; @endphp
 
-        @if ($blocked['banned'])
-            <div class="mb-4 flex items-start gap-3 rounded-lg bg-amber-50 border border-amber-200 p-3">
-                <span class="text-lg">⏳</span>
-                <p class="text-sm text-amber-800 font-medium">{{ $blocked['message'] }}</p>
-            </div>
-        @endif
+    @if ($blocked['banned'])
+        <div class="mb-4 flex items-start gap-3 rounded-lg bg-amber-50 border border-amber-200 p-3">
+            <span class="text-lg">⏳</span>
+            <p class="text-sm text-amber-800 font-medium">{{ $blocked['message'] }}</p>
+        </div>
+    @endif
 
-        @if (session()->has('error'))
-            <div class="mb-4 flex items-start gap-3 rounded-lg bg-red-50 border border-red-200 p-3">
-                <span class="text-lg">🚫</span>
-                <p class="text-sm text-red-700 font-medium">{{ session('error') }}</p>
-            </div>
-        @endif
+    @if (session()->has('error'))
+        <div class="mb-4 flex items-start gap-3 rounded-lg bg-red-50 border border-red-200 p-3">
+            <span class="text-lg">🚫</span>
+            <p class="text-sm text-red-700 font-medium">{{ session('error') }}</p>
+        </div>
+    @endif
 
-        <form wire:submit.prevent="save" class="space-y-4">
+    <form wire:submit.prevent="save" class="space-y-4">
         {{-- Preview Section (Instagram-like Multi-image Slider) --}}
         @if (count($this->compressedImages) > 0)
             <div x-data="{ 
@@ -398,7 +397,6 @@ new class extends Component
         });
         </script>
     </form>
-    </div>
 
     {{-- Popular Hashtags Moved Outside Form --}}
     @if (!$blocked['banned'] && $this->popularHashtags->count() > 0)
