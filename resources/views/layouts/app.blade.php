@@ -59,7 +59,7 @@
                     }" @click.away="showDropdown = false" class="relative">
                         <button @click="showDropdown = !showDropdown" class="relative p-1 rounded-full hover:bg-gray-200 transition-all duration-200 hover:scale-110">
                             <span class="text-xl">🔔</span>
-                            <span x-show="unreadCount > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center text-xs font-bold">{{ unreadCount }}</span>
+                            <span x-show="unreadCount > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center text-xs font-bold" x-text="unreadCount"></span>
                         </button>
 <div x-show="showDropdown" x-transition class="notification-dropdown">
                             <div class="px-4 py-2 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
