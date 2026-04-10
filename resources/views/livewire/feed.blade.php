@@ -136,10 +136,8 @@ new class extends Component
         );
     }
 };
-?>
-
--- Real-time with Echo (remove poll after test) -->
-<div class="space-y-6 pb-20" x-data="feedNotifications()" id="feed-container">
+>
+<div class="space-y-6 pb-20">
     <!-- Create Post -->
     <livewire:create-post />
 
