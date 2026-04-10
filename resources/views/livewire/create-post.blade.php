@@ -251,7 +251,7 @@ new class extends Component
                         <div class="h-full flex transition-transform duration-300 ease-out" 
                              :style="'width: ' + (slides * 100) + '%; transform: translateX(-' + (activeSlide * (100 / slides)) + '%)'">
                             @foreach ($this->compressedImages as $index => $image)
-                                <div class="h-full flex-shrink-0 flex items-center justify-center" style="width: {{ 100 / $imageCount }}%">
+                                <div class="h-full flex-shrink-0 flex items-center justify-center bg-gray-50 dark:bg-gray-800" style="width: {{ 100 / $imageCount }}%">
                                     <img src="{{ $image->temporaryUrl() }}" class="h-full w-full object-cover">
                                 </div>
                             @endforeach
@@ -353,21 +353,23 @@ new class extends Component
                             ⏳ {{ Ban::minutesRemaining(request()->ip()) }}m
                         </div>
                     @else
-                        {{-- Button Bagikan --}}
+                        {{-- Button Bagikan (Clean Instagram Style) --}}
                         <button type="submit" 
-                            class="relative inline-flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 px-10 py-3 text-sm font-bold text-white shadow-xl transition-all active:scale-95 disabled:bg-gray-400 disabled:text-gray-100 disabled:cursor-not-allowed min-w-[180px] border-0" 
-                            style="background-color: #2563eb !important; color: white !important;"
+                            class="relative inline-flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-700 px-8 py-2.5 text-sm font-bold text-white shadow-md hover:shadow-lg transition-all active:scale-95 disabled:bg-blue-300 disabled:cursor-not-allowed min-w-[140px]" 
                             wire:loading.attr="disabled"
                             {{ (count($this->compressedImages) === 0 && empty(trim($this->caption))) ? 'disabled' : '' }}>
                             
-                            <span wire:loading.remove wire:target="save">Bagikan Postingan</span>
-                            <span wire:loading wire:target="save" class="flex items-center gap-2">
+                            <div wire:loading.remove wire:target="save">
+                                Bagikan
+                            </div>
+                            
+                            <div wire:loading wire:target="save" class="flex items-center gap-2">
                                 <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                Memproses...
-                            </span>
+                                <span>Mengirim...</span>
+                            </div>
                         </button>
                     @endif
                 </div>
