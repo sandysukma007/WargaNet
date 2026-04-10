@@ -1,83 +1,68 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@import "tailwindcss";
+
 @theme {
-    --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  
+  /* Custom Premium Shadow for Vercel Visibility */
+  --shadow-premium: 0 4px 15px -3px rgba(0, 0, 0, 0.08), 0 10px 25px -5px rgba(0, 0, 0, 0.05);
 }
 
-
-/* Custom utilities for cleaner HTML */
-
-.image-upload-btn {
-    @apply flex-shrink-0 cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center h-[72px] w-[72px] hover:bg-gray-100 transition relative;
+/* Custom Utilities for Reusable Components */
+@utility post-card {
+  background-color: var(--color-white);
+  border-width: 1px;
+  border-color: var(--color-gray-100);
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-premium);
 }
 
-.image-upload-disabled {
-    @apply opacity-40 pointer-events-none;
+@utility action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  transition-property: all;
+  transition-duration: 200ms;
+  padding: 0.375rem 0.625rem;
+  border-radius: var(--radius-lg);
+  color: var(--color-gray-600);
 }
 
-.hashtag-suggestion {
-    @apply w-full flex items-center justify-between px-3 py-2 text-sm hover:bg-gray-50 text-left transition-colors;
+@utility action-btn-active {
+  color: var(--color-blue-600);
+  background-color: color-mix(in srgb, var(--color-blue-50), transparent 50%);
 }
 
-.hashtag-chip {
-    @apply inline-flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full px-2.5 py-1 transition-colors;
+@utility comment-input {
+  width: 100%;
+  background-color: var(--color-gray-50);
+  border-width: 0;
+  border-radius: var(--radius-lg);
+  padding: 0.375rem 0.75rem;
+  font-size: var(--text-xs);
+  outline: none;
+  transition-property: all;
 }
 
-.post-card {
-    @apply bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)];
-}
-
-.action-btn {
-    @apply flex items-center gap-1.5 transition-all hover:scale-105 px-2.5 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400;
-}
-
-.action-btn-active {
-    @apply text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/20;
-}
-
-.notification-dropdown {
-    @apply absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl z-50 py-2 max-h-96 overflow-y-auto;
-}
-
-.notification-item {
-    @apply px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors border-b border-gray-50 dark:border-gray-800 last:border-b-0;
-}
-
-.caption-container {
-    @apply text-gray-900 dark:text-gray-100 text-sm leading-relaxed mb-3;
-}
-
-.comment-input {
-    @apply w-full px-0 py-2 text-sm border-none focus:outline-none focus:ring-0 bg-transparent placeholder-gray-400 dark:placeholder-gray-500;
-}
-
-
-/* Dark mode palette */
-
+/* Dark Mode Adjustments */
 @media (prefers-color-scheme: dark) {
-    :root {
-        --color-slate-50: oklch(29% 0.02 260);
-        --color-slate-100: oklch(32% 0.02 260);
-        --color-slate-200: oklch(37% 0.03 262);
-        --color-slate-300: oklch(43% 0.04 264);
-        --color-slate-400: oklch(51% 0.05 266);
-        --color-slate-500: oklch(59% 0.05 268);
-        --color-slate-600: oklch(66% 0.04 269);
-        --color-slate-700: oklch(72% 0.03 270);
-        --color-slate-800: oklch(77% 0.02 271);
-        --color-slate-900: oklch(81% 0.01 272);
-        --color-slate-950: oklch(85% 0 273);
-        --color-gray-50: oklch(29% 0.01 250);
-        --color-gray-100: oklch(32% 0.01 250);
-        --color-gray-200: oklch(37% 0.02 252);
-        --color-gray-300: oklch(43% 0.02 254);
-        --color-gray-400: oklch(51% 0.03 256);
-        --color-gray-500: oklch(59% 0.03 258);
-        --color-gray-600: oklch(66% 0.03 259);
-        --color-gray-700: oklch(72% 0.02 260);
-        --color-gray-800: oklch(77% 0.01 261);
-        --color-gray-900: oklch(81% 0.01 262);
-        --color-gray-950: oklch(85% 0 263);
-    }
+  @utility post-card {
+    background-color: var(--color-gray-900);
+    border-color: var(--color-gray-800);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  }
+  
+  @utility action-btn {
+    color: var(--color-gray-400);
+  }
+  
+  @utility action-btn-active {
+    color: var(--color-blue-400);
+    background-color: color-mix(in srgb, var(--color-blue-900), transparent 80%);
+  }
+
+  @utility comment-input {
+    background-color: color-mix(in srgb, var(--color-gray-800), transparent 50%);
+    color: var(--color-gray-200);
+  }
 }

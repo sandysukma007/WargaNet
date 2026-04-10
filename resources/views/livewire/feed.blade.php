@@ -141,19 +141,21 @@ new class extends Component
             @endphp
             <article class="post-card">
                 {{-- Card Header --}}
-                <div class="px-4 py-3 flex items-center justify-between border-b border-gray-50 dark:border-gray-800/50">
+                <div class="px-3 py-2.5 flex items-center justify-between border-b border-gray-50/50 dark:border-gray-800/30 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
                     <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center text-white text-xs font-bold">
-                            {{ substr($nickname, 6, 1) }}
+                        <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center text-white text-[10px] font-bold shadow-sm">
+                            {{ strtoupper(substr($nickname, 6, 1)) }}
                         </div>
-                        <span class="font-bold text-sm text-gray-900 dark:text-gray-100">{{ $nickname }}</span>
+                        <div class="flex flex-col -space-y-0.5">
+                            <span class="font-bold text-xs text-gray-900 dark:text-gray-100">{{ $nickname }}</span>
+                            <span class="text-[9px] text-gray-400 dark:text-gray-500 font-medium">
+                                {{ $post->created_at->diffForHumans(null, true) }} ago
+                            </span>
+                        </div>
                     </div>
-                    <span class="text-[10px] font-medium text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-800 px-2 py-0.5 rounded-full">
-                        {{ $post->created_at->diffForHumans(null, true) }}
-                    </span>
                 </div>
 
-                <!-- Multi-image Slider (Compact) -->
+                <!-- Image Slider (Super Compact) -->
                 @php
                     $images = $post->image_url; 
                 @endphp
@@ -163,85 +165,81 @@ new class extends Component
                     slides: {{ count($images) }},
                     next() { this.activeSlide = (this.activeSlide + 1) % this.slides },
                     prev() { this.activeSlide = (this.activeSlide - 1 + this.slides) % this.slides }
-                }" class="relative w-full bg-gray-50 dark:bg-gray-800/50 overflow-hidden group border-b border-gray-50 dark:border-gray-800/50">
+                }" class="relative w-full bg-gray-50 dark:bg-gray-800/50 overflow-hidden group">
                     
-                    <div class="flex transition-transform duration-300 ease-out" :style="'transform: translateX(-' + (activeSlide * 100) + '%)'">
+                    <div class="flex transition-transform duration-500 ease-in-out" :style="'transform: translateX(-' + (activeSlide * 100) + '%)'">
                         @foreach ($images as $url)
-                            <div class="w-full flex-shrink-0 flex justify-center items-center min-h-[200px] sm:min-h-[280px] max-h-[350px]">
+                            <div class="w-full flex-shrink-0 flex justify-center items-center bg-gray-50 dark:bg-gray-800/50 min-h-[180px] sm:min-h-[240px] max-h-[300px]">
                                 <img src="{{ $url }}" alt=""
-                                     class="w-full h-auto max-h-[350px] object-contain"
+                                     class="w-full h-auto max-h-[300px] object-contain"
                                      loading="lazy">
                             </div>
                         @endforeach
                     </div>
 
                     @if (count($images) > 1)
-                        <button type="button" @click="prev" class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 dark:bg-black/40 text-gray-800 dark:text-white p-1 rounded-full shadow-sm backdrop-blur-sm transition opacity-0 group-hover:opacity-100 z-10">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-                        </button>
-                        <button type="button" @click="next" class="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 dark:bg-black/40 text-gray-800 dark:text-white p-1 rounded-full shadow-sm backdrop-blur-sm transition opacity-0 group-hover:opacity-100 z-10">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                        </button>
+                        <div class="absolute inset-0 flex items-center justify-between px-2 pointer-events-none">
+                            <button type="button" @click="prev" class="pointer-events-auto bg-white/90 dark:bg-black/40 text-gray-800 dark:text-white p-1 rounded-full shadow-md backdrop-blur-sm transition-all hover:scale-110 opacity-0 group-hover:opacity-100">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg>
+                            </button>
+                            <button type="button" @click="next" class="pointer-events-auto bg-white/90 dark:bg-black/40 text-gray-800 dark:text-white p-1 rounded-full shadow-md backdrop-blur-sm transition-all hover:scale-110 opacity-0 group-hover:opacity-100">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" /></svg>
+                            </button>
+                        </div>
 
-                        <div class="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+                        <div class="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10 bg-black/10 dark:bg-white/10 px-1.5 py-1 rounded-full backdrop-blur-sm">
                             <template x-for="i in slides" :key="i-1">
-                                <div class="h-1 w-1 rounded-full transition-all" :class="activeSlide === (i-1) ? 'bg-blue-600 w-2.5' : 'bg-gray-300 dark:bg-gray-600'"></div>
+                                <div class="h-1 w-1 rounded-full transition-all duration-300" :class="activeSlide === (i-1) ? 'bg-blue-500 w-3' : 'bg-gray-400 dark:bg-gray-500'"></div>
                             </template>
                         </div>
                     @endif
                 </div>
                 @endif
 
-                <!-- Post Content -->
-                <div class="p-4">
-                    <!-- Interactions -->
-                    <div class="flex items-center gap-3 mb-3">
-                        <button wire:click="like({{ $post->id }})" class="action-btn {{ $userAction === 'like' ? 'action-btn-active' : '' }}">
-                           <span class="text-lg leading-none">{{ $userAction === 'like' ? '❤️' : '🤍' }}</span>
-                           <span class="text-xs font-bold">{{ $post->likes }}</span>
-                        </button>
-
-                        <button wire:click="dislike({{ $post->id }})" class="action-btn {{ $userAction === 'dislike' ? 'action-btn-active' : '' }}">
-                           <span class="text-lg leading-none">{{ $userAction === 'dislike' ? '👎' : '👎🏻' }}</span>
-                           <span class="text-xs font-bold">{{ $post->dislikes }}</span>
-                        </button>
-                    </div>
-
+                <!-- Post Body -->
+                <div class="p-3.5">
                     @if($post->caption)
-                        <div class="text-sm leading-relaxed text-gray-800 dark:text-gray-200 mb-3">
+                        <div class="text-[13px] leading-relaxed text-gray-800 dark:text-gray-200 mb-3 font-medium">
                             {!! $this->renderCaption($post->caption) !!}
                         </div>
                     @endif
 
-                    <!-- Comments Section -->
-                    <div class="space-y-2 pt-3 border-t border-gray-50 dark:border-gray-800/50">
-                        @if($post->comments->count() > 3)
-                            <button class="text-gray-400 dark:text-gray-500 text-xs font-semibold hover:text-blue-500 transition-colors">
-                                Lihat {{ $post->comments->count() - 3 }} komentar lainnya
-                            </button>
-                        @endif
-                        
+                    <!-- Interactions -->
+                    <div class="flex items-center gap-2 mb-3">
+                        <button wire:click="like({{ $post->id }})" class="action-btn {{ $userAction === 'like' ? 'action-btn-active' : '' }}">
+                           <span class="text-base">{{ $userAction === 'like' ? '❤️' : '🤍' }}</span>
+                           <span class="text-[11px] font-bold">{{ $post->likes }}</span>
+                        </button>
+
+                        <button wire:click="dislike({{ $post->id }})" class="action-btn {{ $userAction === 'dislike' ? 'action-btn-active' : '' }}">
+                           <span class="text-base">{{ $userAction === 'dislike' ? '👎' : '👎🏻' }}</span>
+                           <span class="text-[11px] font-bold">{{ $post->dislikes }}</span>
+                        </button>
+                    </div>
+
+                    <!-- Comments -->
+                    <div class="space-y-2.5 pt-2.5 border-t border-gray-50 dark:border-gray-800/30">
                         <div class="space-y-1.5">
-                            @foreach ($post->comments->take(3) as $comment)
-                                <div class="text-xs leading-relaxed flex items-start gap-1.5">
+                            @foreach ($post->comments->take(2) as $comment)
+                                <div class="text-[11px] leading-relaxed flex items-start gap-1.5">
                                     <span class="font-bold text-gray-900 dark:text-gray-100">{{ $comment->nickname }}</span>
                                     <span class="text-gray-600 dark:text-gray-400">{{ $comment->content }}</span>
                                 </div>
                             @endforeach
                         </div>
 
-                        {{-- Input Section --}}
-                        <div class="relative mt-3 flex items-center gap-2 group" x-data="{ commentText: '' }">
+                        {{-- Compact Reply --}}
+                        <div class="relative flex items-center gap-2" x-data="{ commentText: '' }">
                             <input type="text"
                                    x-model="commentText"
                                    placeholder="Balas..."
-                                   class="flex-grow bg-gray-50 dark:bg-gray-800/50 border-none rounded-lg px-3 py-1.5 text-xs focus:ring-1 focus:ring-blue-500/30 placeholder-gray-400 dark:placeholder-gray-500 transition-all"
+                                   class="comment-input"
                                    x-on:keydown.enter="if(commentText.trim()) { $wire.addComment({{ $post->id }}, commentText); commentText = '' }">
                             
                             <button 
                                 @click="if(commentText.trim()) { $wire.addComment({{ $post->id }}, commentText); commentText = '' }"
                                 x-show="commentText.trim().length > 0"
-                                class="text-blue-600 dark:text-blue-400 font-bold text-xs pr-1"
+                                class="text-blue-600 dark:text-blue-400 font-bold text-[11px] pr-1"
                             >
                                 Kirim
                             </button>

@@ -234,9 +234,9 @@ new class extends Component
     @endif
 
     <form wire:submit.prevent="save" class="space-y-4">
-        <div class="flex flex-col sm:flex-row gap-4 items-start">
-            {{-- Left Side: Preview Section (Fixed 200x200) --}}
-            <div class="flex-shrink-0" style="width: 200px; height: 200px; min-width: 200px; min-height: 200px;">
+        <div class="flex gap-4 items-start">
+            {{-- Left Side: Preview Section (Compact 120x120) --}}
+            <div class="flex-shrink-0" style="width: 120px; height: 120px; min-width: 120px; min-height: 120px;">
                 @php $imageCount = count($this->compressedImages); @endphp
                 @if ($imageCount > 0)
                     <div x-data="{ 
@@ -245,7 +245,7 @@ new class extends Component
                         next() { this.activeSlide = (this.activeSlide + 1) % this.slides },
                         prev() { this.activeSlide = (this.activeSlide - 1 + this.slides) % this.slides }
                     }" 
-                    class="relative w-full h-full rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 group shadow-sm">
+                    class="relative w-full h-full rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 group shadow-sm">
                         
                         {{-- Images --}}
                         <div class="h-full flex transition-transform duration-300 ease-out" 
@@ -257,42 +257,30 @@ new class extends Component
                             @endforeach
                         </div>
 
-                        {{-- Slider Controls --}}
-                        <template x-if="slides > 1">
-                            <div class="absolute inset-0 flex items-center justify-between px-2 pointer-events-none">
-                                <button type="button" @click="prev" class="pointer-events-auto bg-black/40 hover:bg-black/60 text-white p-1 rounded-full backdrop-blur-sm transition opacity-0 group-hover:opacity-100">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-                                </button>
-                                <button type="button" @click="next" class="pointer-events-auto bg-black/40 hover:bg-black/60 text-white p-1 rounded-full backdrop-blur-sm transition opacity-0 group-hover:opacity-100">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                                </button>
-                            </div>
-                        </template>
-
                         {{-- Indicators --}}
                         <template x-if="slides > 1">
-                            <div class="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+                            <div class="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1 z-10">
                                 <template x-for="i in slides" :key="i-1">
-                                    <div class="h-1 w-1 rounded-full transition-all" :class="activeSlide === (i-1) ? 'bg-white w-2' : 'bg-white/50'"></div>
+                                    <div class="h-0.5 w-0.5 rounded-full transition-all" :class="activeSlide === (i-1) ? 'bg-blue-500 w-2' : 'bg-gray-300 dark:bg-gray-600'"></div>
                                 </template>
                             </div>
                         </template>
 
                         {{-- Remove All Button --}}
                         <button type="button" @click="$wire.set('compressedImages', []); $wire.set('rawImage', null)" 
-                            class="absolute top-1 right-1 bg-black/50 hover:bg-black/70 text-white p-1 rounded-full backdrop-blur-sm transition z-10">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            class="absolute top-1 right-1 bg-black/40 hover:bg-black/60 text-white p-0.5 rounded-full backdrop-blur-sm transition z-10">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
                     </div>
                 @else
                     {{-- Empty State --}}
-                    <label for="image-input" class="relative w-full h-full rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800/50 border-2 border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition group {{ $blocked['banned'] ? 'opacity-40 pointer-events-none' : '' }}">
-                        <svg class="w-8 h-8 text-blue-500 mb-2 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <label for="image-input" class="relative w-full h-full rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800/50 border-2 border-dashed border-gray-100 dark:border-gray-800 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition group {{ $blocked['banned'] ? 'opacity-40 pointer-events-none' : '' }}">
+                        <svg class="w-6 h-6 text-blue-500 mb-1 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        <span class="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tambah Foto</span>
+                        <span class="text-[8px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Foto</span>
                     </label>
                 @endif
             </div>
@@ -302,78 +290,37 @@ new class extends Component
                 <div class="relative">
                     <textarea
                         wire:model.live="caption"
-                        style="min-height: 150px;"
-                        class="w-full resize-none border-none bg-transparent p-0 text-base text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:ring-0 {{ $blocked['banned'] ? 'opacity-40' : '' }}"
-                        placeholder="{{ $blocked['banned'] ? 'Sedang dalam jeda posting...' : 'Tulis caption mu... gunakan #hashtag' }}"
+                        style="min-height: 100px;"
+                        class="w-full resize-none border-none bg-transparent p-0 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:ring-0 {{ $blocked['banned'] ? 'opacity-40' : '' }}"
+                        placeholder="{{ $blocked['banned'] ? 'Sabar ya...' : 'Ada cerita apa hari ini?' }}"
                         {{ $blocked['banned'] ? 'disabled' : '' }}
                     ></textarea>
-
-                    {{-- Hashtag Suggestions --}}
-                    @if ($showSuggestions && $this->hashtagSuggestions->count() > 0)
-                        <div class="absolute z-20 left-0 right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
-                            @foreach ($this->hashtagSuggestions as $tag)
-                                <button type="button" wire:click="appendHashtag('{{ $tag->name }}')" class="hashtag-suggestion dark:hover:bg-gray-700">
-                                    <span class="font-medium text-blue-600">#{{ $tag->name }}</span>
-                                    <span class="text-xs text-gray-400 bg-gray-100 dark:bg-gray-900 rounded-full px-2 py-0.5">{{ $tag->count }}x</span>
-                                </button>
-                            @endforeach
-                        </div>
-                    @endif
                 </div>
             </div>
         </div>
 
-        {{-- Bottom Actions (Explicitly separate row) --}}
-        <div class="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800 flex flex-col gap-3">
-            @error('currentImage') <span class="text-xs text-red-500 font-semibold">{{ $message }}</span> @enderror
-            @error('compressedImages.*') <span class="text-xs text-red-500 font-semibold">{{ $message }}</span> @enderror
-            @error('caption') <span class="text-xs text-red-500 font-semibold">{{ $message }}</span> @enderror
-
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    {{-- Image Upload Icon --}}
-                    <label class="flex items-center gap-2 p-2 px-3 text-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-lg transition cursor-pointer hover:bg-blue-100 {{ $blocked['banned'] ? 'opacity-40 pointer-events-none' : '' }}" title="Tambah Gambar">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span class="text-xs font-bold">Foto</span>
-                        <input type="file" id="image-input" class="hidden" accept="image/*" {{ $blocked['banned'] ? 'disabled' : '' }}>
-                    </label>
-
-                    {{-- Video/File Icons (Locked) --}}
-                    <div class="flex items-center gap-2 p-2 px-3 text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg cursor-not-allowed opacity-50">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                        <span class="text-xs font-bold">Video</span>
-                    </div>
-                </div>
-
-                <div class="flex-shrink-0">
-                    @if ($blocked['banned'])
-                        <div class="rounded-full bg-amber-100 text-amber-700 px-6 py-2 text-sm font-bold border border-amber-200">
-                            ⏳ {{ Ban::minutesRemaining(request()->ip()) }}m
-                        </div>
-                    @else
-                        {{-- Button Bagikan (Clean Instagram Style) --}}
-                        <button type="submit" 
-                            class="relative inline-flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-700 px-8 py-2.5 text-sm font-bold text-white shadow-md hover:shadow-lg transition-all active:scale-95 disabled:bg-blue-300 disabled:cursor-not-allowed min-w-[140px]" 
-                            wire:loading.attr="disabled"
-                            {{ (count($this->compressedImages) === 0 && empty(trim($this->caption))) ? 'disabled' : '' }}>
-                            
-                            <div wire:loading.remove wire:target="save">
-                                Bagikan
-                            </div>
-                            
-                            <div wire:loading wire:target="save" class="flex items-center gap-2">
-                                <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                <span>Mengirim...</span>
-                            </div>
-                        </button>
-                    @endif
-                </div>
+        {{-- Bottom Actions --}}
+        <div class="mt-4 pt-3 border-t border-gray-50 dark:border-gray-800/50 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                {{-- Quick Image Upload --}}
+                <label class="flex items-center gap-1.5 p-1.5 px-3 text-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-lg transition cursor-pointer hover:bg-blue-100 {{ $blocked['banned'] ? 'opacity-40 pointer-events-none' : '' }}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span class="text-[10px] font-bold">Tambah Foto</span>
+                    <input type="file" id="image-input" class="hidden" accept="image/*" {{ $blocked['banned'] ? 'disabled' : '' }}>
+                </label>
             </div>
+
+            @if (!$blocked['banned'])
+                <button type="submit" 
+                    class="rounded-lg bg-blue-600 hover:bg-blue-700 px-6 py-2 text-xs font-bold text-white shadow-sm transition-all active:scale-95 disabled:bg-gray-200 dark:disabled:bg-gray-800 disabled:text-gray-400" 
+                    wire:loading.attr="disabled"
+                    {{ (count($this->compressedImages) === 0 && empty(trim($this->caption))) ? 'disabled' : '' }}>
+                    <span wire:loading.remove wire:target="save">Posting</span>
+                    <span wire:loading wire:target="save">...</span>
+                </button>
+            @endif
         </div>
 
         <script>
