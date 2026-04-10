@@ -14,6 +14,7 @@ new class extends Component
     use WithFileUploads;
 
     public $rawImage;
+    public $currentImage;
     public $compressedImages = []; // Array to store multiple images
     public $caption = '';
     public string $hashtagQuery = '';
@@ -71,7 +72,6 @@ new class extends Component
 
     public function updatedCaption(string $value): void
     {
-        // Detect if last word being typed starts with #
         $words = explode(' ', $value);
         $lastWord = end($words);
 
@@ -86,7 +86,6 @@ new class extends Component
 
     public function appendHashtag(string $tag): void
     {
-        // Replace the partially typed hashtag at end of caption with the selected one
         $words = explode(' ', $this->caption);
         array_pop($words);
         $this->caption = implode(' ', $words) . ' #' . $tag . ' ';
@@ -102,6 +101,20 @@ new class extends Component
             if (str_contains($text, $word)) return true;
         }
         return false;
+    }
+
+    public function addStagedImage(): void
+    {
+        if (!$this->currentImage) {
+            return;
+        }
+        if (count($this->compressedImages) >= 10) {
+            $this->dispatch('error', message: 'Maksimal 10 gambar per posting.');
+            $this->currentImage = null;
+            return;
+        }
+        $this->compressedImages[] = $this->currentImage;
+        $this->currentImage = null;
     }
 
     public function save()
@@ -266,16 +279,7 @@ new class extends Component
         @endif
 
         <div class="flex items-start gap-4">
-            {{-- User Avatar Placeholder --}}
-            <div class="flex-shrink-0">
-                <div class="h-10 w-10 rounded-full bg-gradient-to-tr from-yellow-400 to-purple-600 p-[2px]">
-                    <div class="h-full w-full rounded-full bg-white dark:bg-gray-900 p-0.5">
-                        <div class="h-full w-full rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-bold">
-                            {{ substr(md5(request()->ip()), 0, 2) }}
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {{-- Avatar placeholder dihapus sesuai permintaan --}}
 
             <div class="flex-grow pt-1 relative">
                 <textarea
@@ -314,7 +318,7 @@ new class extends Component
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    <input type="file" id="image-input" class="hidden" accept="image/*" multiple {{ $blocked['banned'] ? 'disabled' : '' }}>
+                    <input type="file" id="image-input" class="hidden" accept="image/*" {{ $blocked['banned'] ? 'disabled' : '' }}>
                 </label>
 
                 {{-- Video Upload Icon (Locked) --}}
@@ -351,49 +355,46 @@ new class extends Component
 
         <script>
         document.getElementById('image-input').addEventListener('change', async function(e) {
-            const files = Array.from(e.target.files).slice(0, 10); // Max 10 images
-            if (files.length === 0) return;
+            const file = e.target.files[0];
+            if (!file) return;
 
-            const processedFiles = [];
-
-            for (const file of files) {
-                const compressedBlob = await new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = function(ev) {
-                        const img = new Image();
-                        img.onload = function() {
-                            const canvas = document.createElement('canvas');
-                            const ctx = canvas.getContext('2d');
-                            const maxSize = 1920;
-                            let { width, height } = img;
-                            if (width > height) {
-                                if (width > maxSize) {
-                                    height *= maxSize / width;
-                                    width = maxSize;
-                                }
-                            } else {
-                                if (height > maxSize) {
-                                    width *= maxSize / height;
-                                    height = maxSize;
-                                }
+            const compressedBlob = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        const maxSize = 1920;
+                        let { width, height } = img;
+                        if (width > height) {
+                            if (width > maxSize) {
+                                height *= maxSize / width;
+                                width = maxSize;
                             }
-                            canvas.width = width;
-                            canvas.height = height;
-                            ctx.drawImage(img, 0, 0, width, height);
-                            canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.8);
-                        };
-                        img.src = ev.target.result;
+                        } else {
+                            if (height > maxSize) {
+                                width *= maxSize / height;
+                                height = maxSize;
+                            }
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+                        canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.8);
                     };
-                    reader.readAsDataURL(file);
-                });
-
-                const compressedFile = new File([compressedBlob], file.name.replace(/\.[^/.]+$/, '.jpg'), { type: 'image/jpeg' });
-                processedFiles.push(compressedFile);
-            }
-
-            @this.uploadMultiple('compressedImages', processedFiles, (uploadedFilenames) => {
-                // Done uploading
+                    img.src = ev.target.result;
+                };
+                reader.readAsDataURL(file);
             });
+
+            const compressedFile = new File([compressedBlob], file.name.replace(/\.[^/.]+$/, '.jpg'), { type: 'image/jpeg' });
+
+            @this.upload('currentImage', compressedFile, () => {
+                @this.call('addStagedImage');
+            });
+
+            e.target.value = '';
         });
         </script>
     </form>

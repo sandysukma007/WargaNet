@@ -153,7 +153,7 @@ new class extends Component
                     <div class="flex transition-transform duration-300 ease-out" :style="'transform: translateX(-' + (activeSlide * 100) + '%)'">
                         @foreach ($images as $url)
                             <div class="w-full flex-shrink-0 flex justify-center items-center bg-gray-100 dark:bg-gray-800 min-h-[280px] sm:min-h-[420px] md:min-h-[560px]">
-                                <img src="{{ $url }}" alt="Post image"
+                                <img src="{{ $url }}" alt=""
                                      class="w-full h-auto max-h-[280px] sm:max-h-[420px] md:max-h-[560px] object-contain"
                                      loading="lazy">
                             </div>
