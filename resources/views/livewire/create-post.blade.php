@@ -1,3 +1,4 @@
+<div>
 <?php
 
 use App\Models\Post;
@@ -393,4 +394,5 @@ new class extends Component
         @endforeach
     </div>
 @endif
+</div>
 </div>
