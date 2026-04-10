@@ -99,13 +99,13 @@ new class extends Component
         $ip = request()->ip();
 
         if (Ban::isBanned($ip)) {
-            $this->dispatch('comment_error', message: 'Anda masih diblokir karena sebelumnya menggunakan kata kasar.');
+            $this->dispatch('comment_error', message: 'Anda masih diblokir karena sebelumnya menggunakan kata kasar.', postId: $postId);
             return;
         }
 
         if ($this->hasProfanity($content)) {
             Ban::banIp($ip);
-            $this->dispatch('comment_error', message: 'Kata kasar terdeteksi! Anda diblokir 1 jam.');
+            $this->dispatch('comment_error', message: 'Kata kasar terdeteksi! Anda diblokir 1 jam.', postId: $postId);
             return;
         }
 
@@ -235,28 +235,61 @@ new class extends Component
                         </div>
                     @endif
 
-                    <!-- Comments -->
-                    <div class="space-y-1">
-                        @if($post->comments->count() > 0)
-                            <div class="text-gray-500 dark:text-gray-400 text-[13px] mb-2">{{ $post->comments->count() }} komentar</div>
+                    <!-- Comments Section -->
+                    <div class="space-y-2 mt-4">
+                        @if($post->comments->count() > 3)
+                            <button class="text-gray-500 dark:text-gray-400 text-sm font-medium hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+                                Lihat semua {{ $post->comments->count() }} komentar
+                            </button>
                         @endif
-                        @foreach ($post->comments->take(3) as $comment)
-                            <div class="text-sm text-gray-900 dark:text-gray-100 leading-tight">
-                                <span class="font-bold mr-1">{{ $comment->nickname }}</span>{{ $comment->content }}
-                            </div>
-                        @endforeach
-
-                        <div class="text-[11px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mt-2 mb-1">
-                            {{ $post->created_at->format('d M Y') }}
+                        
+                        <div class="space-y-1.5">
+                            @foreach ($post->comments->take(3) as $comment)
+                                <div class="text-sm leading-relaxed flex items-start gap-1.5">
+                                    <span class="font-bold text-gray-900 dark:text-gray-100 flex-shrink-0">{{ $comment->nickname }}</span>
+                                    <span class="text-gray-700 dark:text-gray-300">{{ $comment->content }}</span>
+                                </div>
+                            @endforeach
                         </div>
 
-                        <div x-data="{ error: '', init() { $wire.on('comment_error', (msg) => { this.error = msg; setTimeout(() => this.error = '', 5000) }) } }" x-show="error" x-transition class="text-xs font-semibold text-red-500 mt-1 bg-red-50 p-2 rounded" x-text="error"></div>
+                        <div class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-3 font-semibold">
+                            {{ $post->created_at->diffForHumans() }}
+                        </div>
 
-                        <div class="relative mt-2 pt-3 border-t border-gray-100 dark:border-gray-700">
+                        {{-- Comment Error --}}
+                        <div x-data="{ 
+                            error: '', 
+                            init() { 
+                                $wire.on('comment_error', (msg) => { 
+                                    if(msg.postId == {{ $post->id }}) { 
+                                        this.error = msg.message; 
+                                        setTimeout(() => this.error = '', 5000) 
+                                    } 
+                                }) 
+                            } 
+                        }" 
+                        x-show="error" x-transition 
+                        class="text-xs font-semibold text-red-500 mt-2 bg-red-50 dark:bg-red-900/20 p-2.5 rounded-lg border border-red-100 dark:border-red-800" 
+                        x-text="error"></div>
+
+                        {{-- Input Section --}}
+                        <div class="relative mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center gap-3 group" x-data="{ commentText: '' }">
                             <input type="text"
+                                   x-model="commentText"
                                    placeholder="Tambahkan komentar..."
-                                   class="comment-input"
-                                   x-on:keydown.enter="$wire.addComment({{ $post->id }}, $event.target.value); $event.target.value = ''">
+                                   class="comment-input flex-grow text-sm"
+                                   x-on:keydown.enter="if(commentText.trim()) { $wire.addComment({{ $post->id }}, commentText); commentText = '' }">
+                            
+                            <button 
+                                @click="if(commentText.trim()) { $wire.addComment({{ $post->id }}, commentText); commentText = '' }"
+                                x-show="commentText.trim().length > 0"
+                                x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter-start="opacity-0 scale-95"
+                                x-transition:enter-end="opacity-100 scale-100"
+                                class="text-blue-600 dark:text-blue-400 font-bold text-sm hover:text-blue-700 dark:hover:text-blue-300 transition-colors pr-1 active:scale-95"
+                            >
+                                Kirim
+                            </button>
                         </div>
                     </div>
                 </div>

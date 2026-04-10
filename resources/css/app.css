@@ -25,15 +25,15 @@
 }
 
 .post-card {
-    @apply bg-white dark:bg-gray-900 border-y sm:border sm:rounded-xl border-gray-200 dark:border-gray-700 overflow-hidden;
+    @apply bg-white dark:bg-gray-900 border-y sm:border sm:rounded-xl border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm sm:shadow-md;
 }
 
 .action-btn {
-    @apply flex items-center gap-1.5 transition-all hover:scale-105;
+    @apply flex items-center gap-1.5 transition-all hover:scale-105 px-3 py-1.5 rounded-full hover:bg-gray-50 dark:hover:bg-gray-800;
 }
 
 .action-btn-active {
-    @apply scale-110;
+    @apply scale-105 bg-gray-50 dark:bg-gray-800;
 }
 
 .notification-dropdown {
@@ -49,7 +49,7 @@
 }
 
 .comment-input {
-    @apply w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-transparent placeholder-gray-400 dark:placeholder-gray-500;
+    @apply w-full px-0 py-2 text-sm border-none focus:outline-none focus:ring-0 bg-transparent placeholder-gray-400 dark:placeholder-gray-500;
 }
 
 

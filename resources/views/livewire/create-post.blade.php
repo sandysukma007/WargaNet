@@ -215,7 +215,7 @@ new class extends Component
 };
 ?>
 
-<div class="bg-white dark:bg-gray-900 p-4 sm:p-5 border-b border-gray-200 dark:border-gray-700 sm:rounded-xl sm:border sm:shadow-sm dark:shadow-black/10">
+<div class="bg-white dark:bg-gray-900 p-4 sm:p-5 border-b border-gray-200 dark:border-gray-700 sm:rounded-xl sm:border shadow-sm sm:shadow-md dark:shadow-black/20">
 
     @php $blocked = $this->blocked; @endphp
 
