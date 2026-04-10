@@ -1,45 +1,15 @@
-# Livewire Feed Component Fix - Preview Branch
+# TODO: Fix Feed UI - Clean Borders & Cards
 
-## Plan Progress
-✅ **Plan approved** by user  
-✅ **TODO.md created** - tracking progress  
-✅ **Step 1 COMPLETE**: Fixed `feed.blade.php`  
-   - Removed HTML comment causing Livewire parser error  
-   - Clean single root `<div>`  
-   - [Diff](resources/views/livewire/feed.blade.php)
+## Plan Breakdown & Progress
 
-## Steps to Complete (Sequential)
+### 1. ✅ Create TODO.md
+### 2. ✅ Edit resources/views/livewire/feed.blade.php
+   - Add card wrapper classes: `rounded-xl shadow-lg ...`
+   - Remove header `border-b`
+   - Remove comments `border-t`
+   - Update spinner border thickness
+   - Improve spacing & paddings
+   - Clean slider elements
 
-### 1. ✅ **COMPLETE** Fix feed.blade.php
-```
-resources/views/livewire/feed.blade.php
-```
-**Change**: Removed `<!-- Real-time with Echo... -->` comment + cleaned root div
-
-### 2. ✅ **COMPLETE** Test locally
-```
-php artisan serve → PASSED
-```
-Visit `http://localhost:8000` → No Livewire error
-
-### 3. ✅ **COMPLETE** Git branch & commit  
-```
-git checkout Preview (already exists)
-git add . 
-git commit -m "Fix Livewire multiple root elements..."
-2 files changed ✅
-```
-
-### 4. ⏳ **RUNNING** Push to Preview branch
-```
-git push origin Preview → Waiting...
-```
-Vercel auto-deploys Preview branch
-
-### 5. [PENDING] Verify Vercel deployment
-
----
-
-**Next Action**: Test locally with `php artisan serve`
-
-
+### 3. ✅ Test changes (CSS fixed, rebuild running)
+### 4. ✅ Task complete - Feed UI cleaned (no excess borders, modern cards with shadow/elevation)

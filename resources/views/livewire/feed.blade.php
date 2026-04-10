@@ -133,15 +133,15 @@ new class extends Component
     <div class="mb-8">
         <livewire:create-post />
     </div>
-    <div class="space-y-8">
+    <div class="space-y-6">
         @foreach ($this->posts as $post)
             @php
                 $userAction = $this->userInteractions[$post->id] ?? null;
                 $nickname  = 'Warga-' . substr(md5($post->ip_address ?? $post->id), 0, 4);
             @endphp
-            <article class="post-card">
+            <article class="post-card max-w-md mx-auto rounded-xl shadow-lg bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm hover:shadow-xl transition-all duration-300 border border-gray-100/50 dark:border-gray-800/50">
                 {{-- Card Header --}}
-                <div class="px-3 py-2.5 flex items-center justify-between border-b border-gray-50/50 dark:border-gray-800/30 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
+                <div class="px-4 py-3 flex items-center justify-between shadow-sm bg-white dark:bg-gray-900">
                     <div class="flex items-center gap-2">
                         <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center text-white text-[10px] font-bold shadow-sm">
                             {{ strtoupper(substr($nickname, 6, 1)) }}
@@ -157,16 +157,16 @@ new class extends Component
 
                 <!-- Image Slider (Super Compact) -->
                 @php
-                    $images = $post->image_url; 
+                    $images = $post->image_url;
                 @endphp
                 @if (count($images) > 0)
-                <div x-data="{ 
-                    activeSlide: 0, 
+                <div x-data="{
+                    activeSlide: 0,
                     slides: {{ count($images) }},
                     next() { this.activeSlide = (this.activeSlide + 1) % this.slides },
                     prev() { this.activeSlide = (this.activeSlide - 1 + this.slides) % this.slides }
                 }" class="relative w-full bg-gray-50 dark:bg-gray-800/50 overflow-hidden group">
-                    
+
                     <div class="flex transition-transform duration-500 ease-in-out" :style="'transform: translateX(-' + (activeSlide * 100) + '%)'">
                         @foreach ($images as $url)
                             <div class="w-full flex-shrink-0 flex justify-center items-center bg-gray-50 dark:bg-gray-800/50 min-h-[180px] sm:min-h-[240px] max-h-[300px]">
@@ -179,10 +179,10 @@ new class extends Component
 
                     @if (count($images) > 1)
                         <div class="absolute inset-0 flex items-center justify-between px-2 pointer-events-none">
-                            <button type="button" @click="prev" class="pointer-events-auto bg-white/90 dark:bg-black/40 text-gray-800 dark:text-white p-1 rounded-full shadow-md backdrop-blur-sm transition-all hover:scale-110 opacity-0 group-hover:opacity-100">
+                            <button type="button" @click="prev" class="pointer-events-auto bg-white/80 dark:bg-black/30 text-gray-800 dark:text-white p-1.5 rounded-full shadow-sm transition-all hover:scale-110 opacity-0 group-hover:opacity-100">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg>
                             </button>
-                            <button type="button" @click="next" class="pointer-events-auto bg-white/90 dark:bg-black/40 text-gray-800 dark:text-white p-1 rounded-full shadow-md backdrop-blur-sm transition-all hover:scale-110 opacity-0 group-hover:opacity-100">
+                            <button type="button" @click="next" class="pointer-events-auto bg-white/80 dark:bg-black/30 text-gray-800 dark:text-white p-1.5 rounded-full shadow-sm transition-all hover:scale-110 opacity-0 group-hover:opacity-100">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" /></svg>
                             </button>
                         </div>
@@ -218,7 +218,7 @@ new class extends Component
                     </div>
 
                     <!-- Comments -->
-                    <div class="space-y-2.5 pt-2.5 border-t border-gray-50 dark:border-gray-800/30">
+                    <div class="space-y-3 pt-4">
                         <div class="space-y-1.5">
                             @foreach ($post->comments->take(2) as $comment)
                                 <div class="text-[11px] leading-relaxed flex items-start gap-1.5">
@@ -235,8 +235,8 @@ new class extends Component
                                    placeholder="Balas..."
                                    class="comment-input"
                                    x-on:keydown.enter="if(commentText.trim()) { $wire.addComment({{ $post->id }}, commentText); commentText = '' }">
-                            
-                            <button 
+
+                            <button
                                 @click="if(commentText.trim()) { $wire.addComment({{ $post->id }}, commentText); commentText = '' }"
                                 x-show="commentText.trim().length > 0"
                                 class="text-blue-600 dark:text-blue-400 font-bold text-[11px] pr-1"
@@ -251,7 +251,7 @@ new class extends Component
 
         @if ($this->posts->hasMorePages())
              <div wire:infinite-scroll="nextPage" class="text-center py-8">
-                <div class="animate-spin inline-block w-6 h-6 border-4 rounded-full border-gray-300 border-t-blue-600 mx-auto"></div>
+<div class="animate-spin inline-block w-6 h-6 border-2 rounded-full border-gray-200 border-t-blue-500 mx-auto"></div>
             </div>
         @endif
     </div>

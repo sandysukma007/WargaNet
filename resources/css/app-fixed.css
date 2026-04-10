@@ -6,7 +6,7 @@
 }
 
 
-/* Custom Utilities - post-card styling moved to blade classes for flexibility */
+/* Custom Utilities for Reusable Components */
 
 @utility action-btn {
     display: flex;
