@@ -20,7 +20,7 @@ new class extends Component
     public string $hashtagQuery = '';
     public bool $showSuggestions = false;
 
-    // Computed to get the first image for backward compatibility if needed, 
+    // Computed to get the first image for backward compatibility if needed,
     // but better to use compressedImages directly in the view.
     #[Computed]
     public function firstImage()
@@ -146,7 +146,7 @@ new class extends Component
 
         try {
             $urls = [];
-            
+
             if (count($this->compressedImages) > 0) {
                 foreach ($this->compressedImages as $image) {
                     // Check for pornography using Sightengine for each image
@@ -215,7 +215,7 @@ new class extends Component
 };
 ?>
 
-<div class="post-card p-4 sm:p-5">
+class="post-card p-3 sm:p-4"
 
     @php $blocked = $this->blocked; @endphp
 
@@ -236,19 +236,19 @@ new class extends Component
     <form wire:submit.prevent="save" class="space-y-4">
         <div class="flex gap-4 items-start">
             {{-- Left Side: Preview Section (Compact 120x120) --}}
-            <div class="flex-shrink-0" style="width: 120px; height: 120px; min-width: 120px; min-height: 120px;">
+style="width: 100px; height: 100px; min-width: 100px; min-height: 100px;"
                 @php $imageCount = count($this->compressedImages); @endphp
                 @if ($imageCount > 0)
-                    <div x-data="{ 
-                        activeSlide: 0, 
+                    <div x-data="{
+                        activeSlide: 0,
                         slides: {{ $imageCount }},
                         next() { this.activeSlide = (this.activeSlide + 1) % this.slides },
                         prev() { this.activeSlide = (this.activeSlide - 1 + this.slides) % this.slides }
-                    }" 
-                    class="relative w-full h-full rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 group shadow-sm">
-                        
+                    }"
+rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 group shadow-sm hover:shadow-md"
+
                         {{-- Images --}}
-                        <div class="h-full flex transition-transform duration-300 ease-out" 
+                        <div class="h-full flex transition-transform duration-300 ease-out"
                              :style="'width: ' + (slides * 100) + '%; transform: translateX(-' + (activeSlide * (100 / slides)) + '%)'">
                             @foreach ($this->compressedImages as $index => $image)
                                 <div class="h-full flex-shrink-0 flex items-center justify-center bg-gray-50 dark:bg-gray-800" style="width: {{ 100 / $imageCount }}%">
@@ -267,7 +267,7 @@ new class extends Component
                         </template>
 
                         {{-- Remove All Button --}}
-                        <button type="button" @click="$wire.set('compressedImages', []); $wire.set('rawImage', null)" 
+                        <button type="button" @click="$wire.set('compressedImages', []); $wire.set('rawImage', null)"
                             class="absolute top-1 right-1 bg-black/40 hover:bg-black/60 text-white p-0.5 rounded-full backdrop-blur-sm transition z-10">
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -276,7 +276,7 @@ new class extends Component
                     </div>
                 @else
                     {{-- Empty State --}}
-                    <label for="image-input" class="relative w-full h-full rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800/50 border-2 border-dashed border-gray-100 dark:border-gray-800 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition group {{ $blocked['banned'] ? 'opacity-40 pointer-events-none' : '' }}">
+bg-gray-50 dark:bg-gray-800/50 shadow-sm hover:shadow-md flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition group
                         <svg class="w-6 h-6 text-blue-500 mb-1 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
@@ -290,7 +290,7 @@ new class extends Component
                 <div class="relative">
                     <textarea
                         wire:model.live="caption"
-                        style="min-height: 100px;"
+style="min-height: 80px;"
                         class="w-full resize-none border-none bg-transparent p-0 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:ring-0 {{ $blocked['banned'] ? 'opacity-40' : '' }}"
                         placeholder="{{ $blocked['banned'] ? 'Sabar ya...' : 'Ada cerita apa hari ini?' }}"
                         {{ $blocked['banned'] ? 'disabled' : '' }}
@@ -300,7 +300,7 @@ new class extends Component
         </div>
 
         {{-- Bottom Actions --}}
-        <div class="mt-4 pt-3 border-t border-gray-50 dark:border-gray-800/50 flex items-center justify-between">
+class="mt-4 pt-2 border-t border-gray-50 dark:border-gray-800/50 flex items-center justify-between"
             <div class="flex items-center gap-2">
                 {{-- Quick Image Upload --}}
                 <label class="flex items-center gap-1.5 p-1.5 px-3 text-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-lg transition cursor-pointer hover:bg-blue-100 {{ $blocked['banned'] ? 'opacity-40 pointer-events-none' : '' }}">
@@ -313,8 +313,8 @@ new class extends Component
             </div>
 
             @if (!$blocked['banned'])
-                <button type="submit" 
-                    class="rounded-lg bg-blue-600 hover:bg-blue-700 px-6 py-2 text-xs font-bold text-white shadow-sm transition-all active:scale-95 disabled:bg-gray-200 dark:disabled:bg-gray-800 disabled:text-gray-400" 
+                <button type="submit"
+                    class="rounded-lg bg-blue-600 hover:bg-blue-700 px-6 py-2 text-xs font-bold text-white shadow-sm transition-all active:scale-95 disabled:bg-gray-200 dark:disabled:bg-gray-800 disabled:text-gray-400"
                     wire:loading.attr="disabled"
                     {{ (count($this->compressedImages) === 0 && empty(trim($this->caption))) ? 'disabled' : '' }}>
                     <span wire:loading.remove wire:target="save">Posting</span>

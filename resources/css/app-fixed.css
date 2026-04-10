@@ -39,14 +39,14 @@
 /* Dark Mode Adjustments */
 
 @media (prefers-color-scheme: dark) {
-    @utility action-btn {
+    .action-btn {
         color: var(--color-gray-400);
     }
-    @utility action-btn-active {
+    .action-btn-active {
         color: var(--color-blue-400);
         background-color: color-mix(in srgb, var(--color-blue-900), transparent 80%);
     }
-    @utility comment-input {
+    .comment-input {
         background-color: color-mix(in srgb, var(--color-gray-800), transparent 50%);
         color: var(--color-gray-200);
     }
