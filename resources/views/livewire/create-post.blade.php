@@ -133,59 +133,62 @@ new class extends Component
             return;
         }
 
-        if (count($this->compressedImages) === 0) {
-            $this->dispatch('error', message: 'Setidaknya satu gambar wajib diunggah.');
+        // Post must have either images or a caption
+        if (count($this->compressedImages) === 0 && empty(trim($this->caption))) {
+            $this->dispatch('error', message: 'Postingan tidak boleh kosong. Unggah foto atau tulis caption.');
             return;
         }
 
         $this->validate([
-            'compressedImages.*' => 'image|max:5120', // Each image max 5MB
+            'compressedImages.*' => 'nullable|image|max:5120', // Each image max 5MB
             'caption' => 'nullable|string|max:1000',
         ]);
 
         try {
             $urls = [];
             
-            foreach ($this->compressedImages as $image) {
-                // Check for pornography using Sightengine for each image
-                if (env('SIGHTENGINE_API_USER') && env('SIGHTENGINE_API_SECRET')) {
-                    $params = array(
-                        'media' => new \CurlFile($image->getRealPath()),
-                        'models' => 'nudity-2.1',
-                        'api_user' => env('SIGHTENGINE_API_USER'),
-                        'api_secret' => env('SIGHTENGINE_API_SECRET'),
-                    );
+            if (count($this->compressedImages) > 0) {
+                foreach ($this->compressedImages as $image) {
+                    // Check for pornography using Sightengine for each image
+                    if (env('SIGHTENGINE_API_USER') && env('SIGHTENGINE_API_SECRET')) {
+                        $params = array(
+                            'media' => new \CurlFile($image->getRealPath()),
+                            'models' => 'nudity-2.1',
+                            'api_user' => env('SIGHTENGINE_API_USER'),
+                            'api_secret' => env('SIGHTENGINE_API_SECRET'),
+                        );
 
-                    $ch = curl_init('https://api.sightengine.com/1.0/check.json');
-                    curl_setopt($ch, CURLOPT_POST, true);
-                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                    curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
-                    $response = curl_exec($ch);
-                    curl_close($ch);
+                        $ch = curl_init('https://api.sightengine.com/1.0/check.json');
+                        curl_setopt($ch, CURLOPT_POST, true);
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                        curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+                        $response = curl_exec($ch);
+                        curl_close($ch);
 
-                    $output = json_decode($response, true);
+                        $output = json_decode($response, true);
 
-                    if (isset($output['status']) && $output['status'] == 'success') {
-                        $nudity = $output['nudity'];
-                        if ($nudity['sexual_activity'] > 0.5 || $nudity['sexual_display'] > 0.5 || $nudity['erotica'] > 0.5) {
-                            $this->dispatch('error', message: 'Salah satu gambar terdeteksi mengandung konten pornografi! Postingan dibatalkan.');
-                            return;
+                        if (isset($output['status']) && $output['status'] == 'success') {
+                            $nudity = $output['nudity'];
+                            if ($nudity['sexual_activity'] > 0.5 || $nudity['sexual_display'] > 0.5 || $nudity['erotica'] > 0.5) {
+                                $this->dispatch('error', message: 'Salah satu gambar terdeteksi mengandung konten pornografi! Postingan dibatalkan.');
+                                return;
+                            }
                         }
                     }
+
+                    $extension = $image->getClientOriginalExtension() ?: 'jpg';
+                    $fileName  = time() . '_' . \Illuminate\Support\Str::random(10) . '.' . $extension;
+                    $path      = 'photos/' . $fileName;
+
+                    try {
+                        $contents = file_get_contents($image->getRealPath());
+                        Storage::disk('s3')->put($path, $contents);
+                    } catch (\Exception $e) {
+                        throw new \Exception('Gagal mengunggah file ke Supabase: ' . $e->getMessage());
+                    }
+
+                    $urls[] = 'https://lwdgrjxgwtcqfctqbbbu.supabase.co/storage/v1/object/public/' . env('AWS_BUCKET') . '/' . $path;
                 }
-
-                $extension = $image->getClientOriginalExtension() ?: 'jpg';
-                $fileName  = time() . '_' . \Illuminate\Support\Str::random(10) . '.' . $extension;
-                $path      = 'photos/' . $fileName;
-
-                try {
-                    $contents = file_get_contents($image->getRealPath());
-                    Storage::disk('s3')->put($path, $contents);
-                } catch (\Exception $e) {
-                    throw new \Exception('Gagal mengunggah file ke Supabase: ' . $e->getMessage());
-                }
-
-                $urls[] = 'https://lwdgrjxgwtcqfctqbbbu.supabase.co/storage/v1/object/public/' . env('AWS_BUCKET') . '/' . $path;
             }
 
             $newPost = Post::create([
@@ -202,7 +205,7 @@ new class extends Component
             Cache::put('last_upload_' . $ip, true, now()->addHour());
             Cache::put('last_upload_time_' . $ip, now(), now()->addHour());
 
-            $this->reset(['rawImage', 'compressedImages', 'caption', 'hashtagQuery', 'showSuggestions']);
+            $this->reset(['rawImage', 'currentImage', 'compressedImages', 'caption', 'hashtagQuery', 'showSuggestions']);
             $this->dispatch('post-created');
 
         } catch (\Exception $e) {
@@ -234,10 +237,11 @@ new class extends Component
         <div class="flex flex-col sm:flex-row gap-4 items-start">
             {{-- Left Side: Preview Section (Fixed 200x200) --}}
             <div class="flex-shrink-0" style="width: 200px; height: 200px; min-width: 200px; min-height: 200px;">
-                @if (count($this->compressedImages) > 0)
+                @php $imageCount = count($this->compressedImages); @endphp
+                @if ($imageCount > 0)
                     <div x-data="{ 
                         activeSlide: 0, 
-                        get slides() { return {{ count($this->compressedImages) }} },
+                        slides: {{ $imageCount }},
                         next() { this.activeSlide = (this.activeSlide + 1) % this.slides },
                         prev() { this.activeSlide = (this.activeSlide - 1 + this.slides) % this.slides }
                     }" 
@@ -247,7 +251,7 @@ new class extends Component
                         <div class="h-full flex transition-transform duration-300 ease-out" 
                              :style="'width: ' + (slides * 100) + '%; transform: translateX(-' + (activeSlide * (100 / slides)) + '%)'">
                             @foreach ($this->compressedImages as $index => $image)
-                                <div class="h-full flex-shrink-0 flex items-center justify-center" style="width: {{ 100 / count($this->compressedImages) }}%">
+                                <div class="h-full flex-shrink-0 flex items-center justify-center" style="width: {{ 100 / $imageCount }}%">
                                     <img src="{{ $image->temporaryUrl() }}" class="h-full w-full object-cover">
                                 </div>
                             @endforeach
@@ -262,6 +266,15 @@ new class extends Component
                                 <button type="button" @click="next" class="pointer-events-auto bg-black/40 hover:bg-black/60 text-white p-1 rounded-full backdrop-blur-sm transition opacity-0 group-hover:opacity-100">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                                 </button>
+                            </div>
+                        </template>
+
+                        {{-- Indicators --}}
+                        <template x-if="slides > 1">
+                            <div class="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+                                <template x-for="i in slides" :key="i-1">
+                                    <div class="h-1 w-1 rounded-full transition-all" :class="activeSlide === (i-1) ? 'bg-white w-2' : 'bg-white/50'"></div>
+                                </template>
                             </div>
                         </template>
 
@@ -341,9 +354,9 @@ new class extends Component
                         </div>
                     @else
                         <button type="submit" 
-                            class="rounded-full bg-blue-600 hover:bg-blue-700 px-10 py-3 text-sm font-bold text-white shadow-lg transition-all active:scale-95 disabled:bg-gray-300 disabled:text-gray-500 disabled:shadow-none disabled:cursor-not-allowed" 
+                            class="rounded-full bg-blue-600 hover:bg-blue-700 px-10 py-3 text-sm font-bold text-white shadow-xl transition-all active:scale-95 disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none disabled:cursor-not-allowed min-w-[180px]" 
                             wire:loading.attr="disabled"
-                            {{ count($this->compressedImages) === 0 ? 'disabled' : '' }}>
+                            {{ (count($this->compressedImages) === 0 && empty(trim($this->caption))) ? 'disabled' : '' }}>
                             <span wire:loading.remove wire:target="save">Bagikan Postingan</span>
                             <span wire:loading wire:target="save">Memproses...</span>
                         </button>

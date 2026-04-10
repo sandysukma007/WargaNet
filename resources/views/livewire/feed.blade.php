@@ -140,14 +140,15 @@ new class extends Component
             <article class="post-card">
                 <!-- Multi-image Slider (Instagram-like) -->
                 @php
-                    $images = is_array($post->image_url) ? $post->image_url : [$post->image_url];
+                    $images = $post->image_url; // Use the accessor directly
                 @endphp
+                @if (count($images) > 0)
                 <div x-data="{ 
                     activeSlide: 0, 
                     slides: {{ count($images) }},
                     next() { this.activeSlide = (this.activeSlide + 1) % this.slides },
                     prev() { this.activeSlide = (this.activeSlide - 1 + this.slides) % this.slides }
-                }" class="relative w-full bg-gray-100 dark:bg-gray-800 overflow-hidden group">
+                }" class="relative w-full bg-gray-100 dark:bg-gray-800 overflow-hidden group border-b border-gray-100 dark:border-gray-800">
                     
                     {{-- Image Container --}}
                     <div class="flex transition-transform duration-300 ease-out" :style="'transform: translateX(-' + (activeSlide * 100) + '%)'">
@@ -177,6 +178,7 @@ new class extends Component
                         </div>
                     @endif
                 </div>
+                @endif
 
                 <!-- Post Content -->
                 <div class="p-4 sm:p-5">
