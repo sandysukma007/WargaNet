@@ -8,9 +8,6 @@ use Livewire\Volt\Component;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\WithPagination;
-use App\Events\PostInteracted;
-use App\Events\PostCreated;
-use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Event;
 use Livewire\Attributes\On as LivewireOn;
 
@@ -51,7 +48,6 @@ new class extends Component
         if ($existing && $existing->type === 'like') {
             $existing->delete();
             Post::find($postId)->decrement('likes');
-            Event::dispatch(new PostInteracted($postId, 'like-unlike'));
             return;
         }
 
@@ -63,7 +59,6 @@ new class extends Component
             Interaction::create(['post_id' => $postId, 'ip_address' => $ip, 'type' => 'like']);
             Post::find($postId)->increment('likes');
         }
-        Event::dispatch(new PostInteracted($postId, 'like', ['ip' => substr(md5($ip), 0, 4)]));
     }
 
     public function dislike($postId)
@@ -74,7 +69,6 @@ new class extends Component
         if ($existing && $existing->type === 'dislike') {
             $existing->delete();
             Post::find($postId)->decrement('dislikes');
-            Event::dispatch(new PostInteracted($postId, 'dislike-unlike'));
             return;
         }
 
@@ -86,7 +80,6 @@ new class extends Component
             Interaction::create(['post_id' => $postId, 'ip_address' => $ip, 'type' => 'dislike']);
             Post::find($postId)->increment('dislikes');
         }
-        Event::dispatch(new PostInteracted($postId, 'dislike', ['ip' => substr(md5($ip), 0, 4)]));
     }
 
     private function hasProfanity($text): bool
@@ -121,7 +114,6 @@ new class extends Component
             'content'  => $content,
             'nickname' => 'Warga-' . substr(md5($ip), 0, 4),
         ]);
-        Event::dispatch(new PostInteracted($postId, 'comment', ['nickname' => $comment->nickname, 'content' => substr($content, 0, 50) . (strlen($content) > 50 ? '...' : '')]));
     }
 
     /**

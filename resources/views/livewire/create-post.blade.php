@@ -123,6 +123,34 @@ new class extends Component
         ]);
 
         try {
+            // Check for pornography using Sightengine
+            if (env('SIGHTENGINE_API_USER') && env('SIGHTENGINE_API_SECRET')) {
+                $params = array(
+                    'media' => new \CurlFile($this->compressedImage->getRealPath()),
+                    'models' => 'nudity-2.1',
+                    'api_user' => env('SIGHTENGINE_API_USER'),
+                    'api_secret' => env('SIGHTENGINE_API_SECRET'),
+                );
+
+                $ch = curl_init('https://api.sightengine.com/1.0/check.json');
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+                $response = curl_exec($ch);
+                curl_close($ch);
+
+                $output = json_decode($response, true);
+
+                if (isset($output['status']) && $output['status'] == 'success') {
+                    $nudity = $output['nudity'];
+                    // If sexual content is detected (raw, partial or suggestive above 0.5)
+                    if ($nudity['sexual_activity'] > 0.5 || $nudity['sexual_display'] > 0.5 || $nudity['erotica'] > 0.5) {
+                        $this->dispatch('error', message: 'Konten pornografi terdeteksi! Postingan dibatalkan.');
+                        return;
+                    }
+                }
+            }
+
             $extension = $this->compressedImage->getClientOriginalExtension() ?? pathinfo($this->compressedImage->getClientOriginalName() ?? 'image.jpg', PATHINFO_EXTENSION) ?: 'jpg';
             $fileName  = time() . '_' . \Illuminate\Support\Str::random(10) . '.' . $extension;
             $path      = 'photos/' . $fileName;
@@ -156,8 +184,6 @@ new class extends Component
             Cache::put('last_upload_' . $ip, true, now()->addHour());
             Cache::put('last_upload_time_' . $ip, now(), now()->addHour());
 
-            Event::dispatch(new PostCreated($newPost));
-
             $this->reset(['rawImage', 'compressedImage', 'caption', 'hashtagQuery', 'showSuggestions']);
             $this->dispatch('post-created');
 
@@ -187,18 +213,50 @@ new class extends Component
     @endif
 
     <form wire:submit.prevent="save" class="space-y-4">
-        <div class="flex items-start gap-4">
-            <label for="image-input" 
-                class="image-upload-btn {{ $blocked['banned'] ? 'image-upload-disabled' : '' }}">
-                @if (($rawImage || $compressedImage) && ($compressedImage ? $compressedImage->isPreviewable() : true))
-                    <img id="image-preview" src="{{ $compressedImage ? $compressedImage->temporaryUrl() : '' }}" class="h-full w-full object-cover">
-                @else
-                    <svg class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                @endif
-                <input type="file" id="image-input" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" {{ $blocked['banned'] ? 'disabled' : '' }}>
-            </label>
+        <div class="flex items-start gap-4" x-data="{ showUploadMenu: false }">
+            <div class="relative">
+                <button type="button" @click="showUploadMenu = !showUploadMenu"
+                    class="flex-shrink-0 cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center h-[72px] w-[72px] hover:bg-gray-100 transition relative {{ $blocked['banned'] ? 'image-upload-disabled' : '' }}">
+                    @if (($rawImage || $compressedImage) && ($compressedImage ? $compressedImage->isPreviewable() : true))
+                        <img id="image-preview" src="{{ $compressedImage ? $compressedImage->temporaryUrl() : '' }}" class="h-full w-full object-cover">
+                    @else
+                        <span class="text-2xl">📌</span>
+                    @endif
+                </button>
+
+                {{-- Upload Menu --}}
+                <div x-show="showUploadMenu" @click.away="showUploadMenu = false"
+                    class="absolute z-30 left-0 bottom-full mb-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl py-2"
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 scale-95"
+                    x-transition:enter-end="opacity-100 scale-100">
+                    
+                    {{-- Image Upload (Ready) --}}
+                    <label class="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer transition-colors" @click="showUploadMenu = false">
+                        <span class="text-xl">🖼️</span>
+                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Unggah Gambar</span>
+                        <input type="file" id="image-input" class="hidden" accept="image/*" {{ $blocked['banned'] ? 'disabled' : '' }}>
+                    </label>
+
+                    {{-- File Upload (Placeholder) --}}
+                    <div class="flex items-center gap-3 px-4 py-2 opacity-40 cursor-not-allowed">
+                        <span class="text-xl">📄</span>
+                        <div class="flex flex-col">
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Unggah File</span>
+                            <span class="text-[10px] text-amber-600 font-semibold">Segera hadir</span>
+                        </div>
+                    </div>
+
+                    {{-- Video Upload (Placeholder) --}}
+                    <div class="flex items-center gap-3 px-4 py-2 opacity-40 cursor-not-allowed">
+                        <span class="text-xl">🎥</span>
+                        <div class="flex flex-col">
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Unggah Video</span>
+                            <span class="text-[10px] text-amber-600 font-semibold">Segera hadir</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <script>
             document.getElementById('image-input').addEventListener('change', function(e) {
@@ -235,7 +293,11 @@ new class extends Component
                             const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), { type: 'image/jpeg' });
                             @this.set('rawImage', file.name); // Trigger reactivity
                             @this.upload('compressedImage', compressedFile, (uploadedFilename) => {
-                                document.getElementById('image-preview').src = URL.createObjectURL(blob);
+                                // Find image-preview within the component
+                                const previewImg = document.getElementById('image-preview');
+                                if (previewImg) {
+                                    previewImg.src = URL.createObjectURL(blob);
+                                }
                             });
                         }, 'image/jpeg', 0.8);
                     };
