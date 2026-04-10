@@ -139,9 +139,9 @@ new class extends Component
                 $userAction = $this->userInteractions[$post->id] ?? null;
                 $nickname  = 'Warga-' . substr(md5($post->ip_address ?? $post->id), 0, 4);
             @endphp
-class="post-card max-w-sm mx-auto rounded-xl shadow-md bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm hover:shadow-2xl transition-all duration-300"
+            <article class="post-card max-w-sm mx-auto rounded-xl shadow-md bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
                 {{-- Card Header --}}
-class="px-3 py-2 flex items-center justify-between shadow-sm bg-white dark:bg-gray-900"
+                <div class="px-3 py-2 flex items-center justify-between shadow-sm bg-white dark:bg-gray-900">
                     <div class="flex items-center gap-2">
                         <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center text-white text-[10px] font-bold shadow-sm">
                             {{ strtoupper(substr($nickname, 6, 1)) }}
@@ -169,9 +169,9 @@ class="px-3 py-2 flex items-center justify-between shadow-sm bg-white dark:bg-gr
 
                     <div class="flex transition-transform duration-500 ease-in-out" :style="'transform: translateX(-' + (activeSlide * 100) + '%)'">
                         @foreach ($images as $url)
-min-h-[150px] sm:min-h-[200px] max-h-[250px]"
+                            <div class="w-full flex-shrink-0 flex justify-center items-center bg-gray-50 dark:bg-gray-800/50 min-h-[150px] sm:min-h-[200px] max-h-[250px]">
                                 <img src="{{ $url }}" alt=""
-                                     class="w-full h-auto max-h-[300px] object-contain"
+                                     class="w-full h-auto max-h-[250px] object-contain"
                                      loading="lazy">
                             </div>
                         @endforeach
@@ -197,7 +197,7 @@ min-h-[150px] sm:min-h-[200px] max-h-[250px]"
                 @endif
 
                 <!-- Post Body -->
-<div class="p-2.5">
+                <div class="p-2.5">
                     @if($post->caption)
                         <div class="text-[13px] leading-relaxed text-gray-800 dark:text-gray-200 mb-3 font-medium">
                             {!! $this->renderCaption($post->caption) !!}
@@ -251,7 +251,7 @@ min-h-[150px] sm:min-h-[200px] max-h-[250px]"
 
         @if ($this->posts->hasMorePages())
              <div wire:infinite-scroll="nextPage" class="text-center py-8">
-<div class="animate-spin inline-block w-6 h-6 border-2 rounded-full border-gray-200 border-t-blue-500 mx-auto"></div>
+                <div class="animate-spin inline-block w-6 h-6 border-2 rounded-full border-gray-200 border-t-blue-500 mx-auto"></div>
             </div>
         @endif
     </div>

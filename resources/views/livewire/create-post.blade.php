@@ -215,8 +215,7 @@ new class extends Component
 };
 ?>
 
-class="post-card p-3 sm:p-4"
-
+<div class="post-card p-3 sm:p-4">
     @php $blocked = $this->blocked; @endphp
 
     @if ($blocked['banned'])
@@ -233,10 +232,10 @@ class="post-card p-3 sm:p-4"
         </div>
     @endif
 
-    <form wire:submit.prevent="save" class="space-y-4">
+    <form wire:submit="save" class="space-y-4">
         <div class="flex gap-4 items-start">
-            {{-- Left Side: Preview Section (Compact 120x120) --}}
-style="width: 100px; height: 100px; min-width: 100px; min-height: 100px;"
+            {{-- Left Side: Preview Section --}}
+            <div class="flex-shrink-0" style="width: 100px; height: 100px; min-width: 100px; min-height: 100px;">
                 @php $imageCount = count($this->compressedImages); @endphp
                 @if ($imageCount > 0)
                     <div x-data="{
@@ -245,7 +244,7 @@ style="width: 100px; height: 100px; min-width: 100px; min-height: 100px;"
                         next() { this.activeSlide = (this.activeSlide + 1) % this.slides },
                         prev() { this.activeSlide = (this.activeSlide - 1 + this.slides) % this.slides }
                     }"
-rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 group shadow-sm hover:shadow-md"
+                    class="relative w-full h-full rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 group shadow-sm hover:shadow-md">
 
                         {{-- Images --}}
                         <div class="h-full flex transition-transform duration-300 ease-out"
@@ -276,7 +275,7 @@ rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 group shadow-sm hover:sha
                     </div>
                 @else
                     {{-- Empty State --}}
-bg-gray-50 dark:bg-gray-800/50 shadow-sm hover:shadow-md flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition group
+                    <label for="image-input" class="relative w-full h-full rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800/50 shadow-sm hover:shadow-md flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition group {{ $blocked['banned'] ? 'opacity-40 pointer-events-none' : '' }}">
                         <svg class="w-6 h-6 text-blue-500 mb-1 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
@@ -290,7 +289,7 @@ bg-gray-50 dark:bg-gray-800/50 shadow-sm hover:shadow-md flex flex-col items-cen
                 <div class="relative">
                     <textarea
                         wire:model.live="caption"
-style="min-height: 80px;"
+                        style="min-height: 80px;"
                         class="w-full resize-none border-none bg-transparent p-0 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:ring-0 {{ $blocked['banned'] ? 'opacity-40' : '' }}"
                         placeholder="{{ $blocked['banned'] ? 'Sabar ya...' : 'Ada cerita apa hari ini?' }}"
                         {{ $blocked['banned'] ? 'disabled' : '' }}
@@ -300,7 +299,7 @@ style="min-height: 80px;"
         </div>
 
         {{-- Bottom Actions --}}
-class="mt-4 pt-2 border-t border-gray-50 dark:border-gray-800/50 flex items-center justify-between"
+        <div class="mt-4 pt-2 border-t border-gray-50 dark:border-gray-800/50 flex items-center justify-between">
             <div class="flex items-center gap-2">
                 {{-- Quick Image Upload --}}
                 <label class="flex items-center gap-1.5 p-1.5 px-3 text-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-lg transition cursor-pointer hover:bg-blue-100 {{ $blocked['banned'] ? 'opacity-40 pointer-events-none' : '' }}">
