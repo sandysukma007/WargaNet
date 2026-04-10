@@ -25,7 +25,7 @@
 }
 
 .post-card {
-    @apply bg-white dark:bg-gray-900 border-y sm:border sm:rounded-xl border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm sm:shadow-md;
+    @apply bg-white dark:bg-gray-900 border-y sm:border sm:rounded-xl border-gray-100 dark:border-gray-800 overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.08)] sm:shadow-[0_8px_20px_rgba(0,0,0,0.12)];
 }
 
 .action-btn {

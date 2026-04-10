@@ -129,9 +129,11 @@ new class extends Component
     }
 };
 ?>
-<div class="space-y-6 pb-20">
-    <livewire:create-post />
-    <div class="space-y-6">
+<div class="space-y-8 pb-20 px-1 sm:px-0">
+    <div class="mb-8">
+        <livewire:create-post />
+    </div>
+    <div class="space-y-8">
         @foreach ($this->posts as $post)
             @php
                 $userAction = $this->userInteractions[$post->id] ?? null;
@@ -153,9 +155,9 @@ new class extends Component
                     {{-- Image Container --}}
                     <div class="flex transition-transform duration-300 ease-out" :style="'transform: translateX(-' + (activeSlide * 100) + '%)'">
                         @foreach ($images as $url)
-                            <div class="w-full flex-shrink-0 flex justify-center items-center bg-gray-100 dark:bg-gray-800 min-h-[280px] sm:min-h-[420px] md:min-h-[560px]">
+                            <div class="w-full flex-shrink-0 flex justify-center items-center bg-gray-100 dark:bg-gray-800 min-h-[220px] sm:min-h-[320px] md:min-h-[420px]">
                                 <img src="{{ $url }}" alt=""
-                                     class="w-full h-auto max-h-[280px] sm:max-h-[420px] md:max-h-[560px] object-contain"
+                                     class="w-full h-auto max-h-[220px] sm:max-h-[320px] md:max-h-[420px] object-contain"
                                      loading="lazy">
                             </div>
                         @endforeach
@@ -252,7 +254,7 @@ new class extends Component
                             @endforeach
                         </div>
 
-                        <div class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-3 font-semibold">
+                        <div class="text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-3">
                             {{ $post->created_at->diffForHumans() }}
                         </div>
 
