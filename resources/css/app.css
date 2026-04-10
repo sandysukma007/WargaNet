@@ -9,7 +9,7 @@
 /* Custom utilities for cleaner HTML */
 
 .image-upload-btn {
-    @apply flex-shrink-0 cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center h-[72px] w-[72px] hover: bg-gray-100 transition relative;
+    @apply flex-shrink-0 cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center h-[72px] w-[72px] hover:bg-gray-100 transition relative;
 }
 
 .image-upload-disabled {
@@ -17,19 +17,19 @@
 }
 
 .hashtag-suggestion {
-    @apply w-full flex items-center justify-between px-3 py-2 text-sm hover: bg-gray-50 text-left transition-colors;
+    @apply w-full flex items-center justify-between px-3 py-2 text-sm hover:bg-gray-50 text-left transition-colors;
 }
 
 .hashtag-chip {
-    @apply inline-flex items-center gap-1 text-xs bg-gray-100 hover: bg-gray-200 text-gray-700 rounded-full px-2.5 py-1 transition-colors;
+    @apply inline-flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full px-2.5 py-1 transition-colors;
 }
 
 .post-card {
-    @apply bg-white dark: bg-gray-900 border-y sm: border sm: rounded-xl border-gray-200 dark: border-gray-700 overflow-hidden;
+    @apply bg-white dark:bg-gray-900 border-y sm:border sm:rounded-xl border-gray-200 dark:border-gray-700 overflow-hidden;
 }
 
 .action-btn {
-    @apply flex items-center gap-1.5 transition-all hover: scale-105;
+    @apply flex items-center gap-1.5 transition-all hover:scale-105;
 }
 
 .action-btn-active {
@@ -37,45 +37,47 @@
 }
 
 .notification-dropdown {
-    @apply absolute right-0 mt-2 w-80 bg-white dark: bg-gray-800 border border-gray-200 dark: border-gray-700 rounded-xl shadow-2xl z-50 py-2 max-h-96 overflow-y-auto;
+    @apply absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl z-50 py-2 max-h-96 overflow-y-auto;
 }
 
 .notification-item {
-    @apply px-4 py-3 hover: bg-gray-50 dark: hover: bg-gray-900 transition-colors border-b border-gray-50 dark: border-gray-800 last: border-b-0;
+    @apply px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors border-b border-gray-50 dark:border-gray-800 last:border-b-0;
 }
 
 .caption-container {
-    @apply text-gray-900 dark: text-gray-100 text-sm leading-relaxed mb-3;
+    @apply text-gray-900 dark:text-gray-100 text-sm leading-relaxed mb-3;
 }
 
 .comment-input {
-    @apply w-full px-3 py-2 text-sm border rounded-lg focus: outline-none focus: ring-2 focus: ring-blue-500 focus: border-transparent bg-transparent placeholder-gray-400 dark: placeholder-gray-500;
+    @apply w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-transparent placeholder-gray-400 dark:placeholder-gray-500;
 }
 
 
 /* Dark mode palette */
 
-@dark {
-    --color-slate-50: oklch(29% 0.02 260);
-    --color-slate-100: oklch(32% 0.02 260);
-    --color-slate-200: oklch(37% 0.03 262);
-    --color-slate-300: oklch(43% 0.04 264);
-    --color-slate-400: oklch(51% 0.05 266);
-    --color-slate-500: oklch(59% 0.05 268);
-    --color-slate-600: oklch(66% 0.04 269);
-    --color-slate-700: oklch(72% 0.03 270);
-    --color-slate-800: oklch(77% 0.02 271);
-    --color-slate-900: oklch(81% 0.01 272);
-    --color-slate-950: oklch(85% 0 273);
-    --color-gray-50: oklch(29% 0.01 250);
-    --color-gray-100: oklch(32% 0.01 250);
-    --color-gray-200: oklch(37% 0.02 252);
-    --color-gray-300: oklch(43% 0.02 254);
-    --color-gray-400: oklch(51% 0.03 256);
-    --color-gray-500: oklch(59% 0.03 258);
-    --color-gray-600: oklch(66% 0.03 259);
-    --color-gray-700: oklch(72% 0.02 260);
-    --color-gray-800: oklch(77% 0.01 261);
-    --color-gray-900: oklch(81% 0.01 262);
-    --color-gray-950: oklch(85% 0 263);
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-slate-50: oklch(29% 0.02 260);
+        --color-slate-100: oklch(32% 0.02 260);
+        --color-slate-200: oklch(37% 0.03 262);
+        --color-slate-300: oklch(43% 0.04 264);
+        --color-slate-400: oklch(51% 0.05 266);
+        --color-slate-500: oklch(59% 0.05 268);
+        --color-slate-600: oklch(66% 0.04 269);
+        --color-slate-700: oklch(72% 0.03 270);
+        --color-slate-800: oklch(77% 0.02 271);
+        --color-slate-900: oklch(81% 0.01 272);
+        --color-slate-950: oklch(85% 0 273);
+        --color-gray-50: oklch(29% 0.01 250);
+        --color-gray-100: oklch(32% 0.01 250);
+        --color-gray-200: oklch(37% 0.02 252);
+        --color-gray-300: oklch(43% 0.02 254);
+        --color-gray-400: oklch(51% 0.03 256);
+        --color-gray-500: oklch(59% 0.03 258);
+        --color-gray-600: oklch(66% 0.03 259);
+        --color-gray-700: oklch(72% 0.02 260);
+        --color-gray-800: oklch(77% 0.01 261);
+        --color-gray-900: oklch(81% 0.01 262);
+        --color-gray-950: oklch(85% 0 263);
+    }
 }

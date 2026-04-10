@@ -354,7 +354,7 @@ new class extends Component
                         </div>
                     @else
                         <button type="submit" 
-                            class="rounded-full bg-blue-600 hover:bg-blue-700 px-10 py-3 text-sm font-bold text-white shadow-xl transition-all active:scale-95 disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none disabled:cursor-not-allowed min-w-[180px]" 
+                            class="relative z-10 rounded-full bg-blue-600 hover:bg-blue-700 px-10 py-3 text-sm font-bold text-white shadow-2xl transition-all active:scale-95 disabled:bg-gray-400 disabled:text-gray-200 disabled:cursor-not-allowed min-w-[180px] border-2 border-transparent" 
                             wire:loading.attr="disabled"
                             {{ (count($this->compressedImages) === 0 && empty(trim($this->caption))) ? 'disabled' : '' }}>
                             <span wire:loading.remove wire:target="save">Bagikan Postingan</span>
