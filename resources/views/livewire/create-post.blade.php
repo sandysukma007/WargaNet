@@ -14,10 +14,18 @@ new class extends Component
     use WithFileUploads;
 
     public $rawImage;
-    public $compressedImage;
+    public $compressedImages = []; // Array to store multiple images
     public $caption = '';
     public string $hashtagQuery = '';
     public bool $showSuggestions = false;
+
+    // Computed to get the first image for backward compatibility if needed, 
+    // but better to use compressedImages directly in the view.
+    #[Computed]
+    public function firstImage()
+    {
+        return count($this->compressedImages) > 0 ? $this->compressedImages[0] : null;
+    }
 
     #[Computed]
     public function blocked(): array
@@ -112,66 +120,63 @@ new class extends Component
             return;
         }
 
-        if (!$this->compressedImage) {
-            $this->dispatch('error', message: 'Gambar wajib diunggah.');
+        if (count($this->compressedImages) === 0) {
+            $this->dispatch('error', message: 'Setidaknya satu gambar wajib diunggah.');
             return;
         }
 
         $this->validate([
-            'compressedImage' => 'image|max:5120', // 5MB max
+            'compressedImages.*' => 'image|max:5120', // Each image max 5MB
             'caption' => 'nullable|string|max:1000',
         ]);
 
         try {
-            // Check for pornography using Sightengine
-            if (env('SIGHTENGINE_API_USER') && env('SIGHTENGINE_API_SECRET')) {
-                $params = array(
-                    'media' => new \CurlFile($this->compressedImage->getRealPath()),
-                    'models' => 'nudity-2.1',
-                    'api_user' => env('SIGHTENGINE_API_USER'),
-                    'api_secret' => env('SIGHTENGINE_API_SECRET'),
-                );
+            $urls = [];
+            
+            foreach ($this->compressedImages as $image) {
+                // Check for pornography using Sightengine for each image
+                if (env('SIGHTENGINE_API_USER') && env('SIGHTENGINE_API_SECRET')) {
+                    $params = array(
+                        'media' => new \CurlFile($image->getRealPath()),
+                        'models' => 'nudity-2.1',
+                        'api_user' => env('SIGHTENGINE_API_USER'),
+                        'api_secret' => env('SIGHTENGINE_API_SECRET'),
+                    );
 
-                $ch = curl_init('https://api.sightengine.com/1.0/check.json');
-                curl_setopt($ch, CURLOPT_POST, true);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
-                $response = curl_exec($ch);
-                curl_close($ch);
+                    $ch = curl_init('https://api.sightengine.com/1.0/check.json');
+                    curl_setopt($ch, CURLOPT_POST, true);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+                    $response = curl_exec($ch);
+                    curl_close($ch);
 
-                $output = json_decode($response, true);
+                    $output = json_decode($response, true);
 
-                if (isset($output['status']) && $output['status'] == 'success') {
-                    $nudity = $output['nudity'];
-                    // If sexual content is detected (raw, partial or suggestive above 0.5)
-                    if ($nudity['sexual_activity'] > 0.5 || $nudity['sexual_display'] > 0.5 || $nudity['erotica'] > 0.5) {
-                        $this->dispatch('error', message: 'Konten pornografi terdeteksi! Postingan dibatalkan.');
-                        return;
+                    if (isset($output['status']) && $output['status'] == 'success') {
+                        $nudity = $output['nudity'];
+                        if ($nudity['sexual_activity'] > 0.5 || $nudity['sexual_display'] > 0.5 || $nudity['erotica'] > 0.5) {
+                            $this->dispatch('error', message: 'Salah satu gambar terdeteksi mengandung konten pornografi! Postingan dibatalkan.');
+                            return;
+                        }
                     }
                 }
-            }
 
-            $extension = $this->compressedImage->getClientOriginalExtension() ?? pathinfo($this->compressedImage->getClientOriginalName() ?? 'image.jpg', PATHINFO_EXTENSION) ?: 'jpg';
-            $fileName  = time() . '_' . \Illuminate\Support\Str::random(10) . '.' . $extension;
-            $path      = 'photos/' . $fileName;
+                $extension = $image->getClientOriginalExtension() ?: 'jpg';
+                $fileName  = time() . '_' . \Illuminate\Support\Str::random(10) . '.' . $extension;
+                $path      = 'photos/' . $fileName;
 
-            try {
-                if (method_exists($this->compressedImage, 'path')) {
-                    // Livewire TemporaryUploadedFile
-                    $contents = Storage::disk('s3')->get($this->compressedImage->path());
-                } else {
-                    // Browser File object from JS compression
-                    $contents = file_get_contents($this->compressedImage->getPathname());
+                try {
+                    $contents = file_get_contents($image->getRealPath());
+                    Storage::disk('s3')->put($path, $contents);
+                } catch (\Exception $e) {
+                    throw new \Exception('Gagal mengunggah file ke Supabase: ' . $e->getMessage());
                 }
-                Storage::disk('s3')->put($path, $contents);
-            } catch (\Exception $e) {
-                throw new \Exception('Gagal mengunggah file ke Supabase: ' . $e->getMessage());
-            }
 
-            $url = 'https://lwdgrjxgwtcqfctqbbbu.supabase.co/storage/v1/object/public/' . env('AWS_BUCKET') . '/' . $path;
+                $urls[] = 'https://lwdgrjxgwtcqfctqbbbu.supabase.co/storage/v1/object/public/' . env('AWS_BUCKET') . '/' . $path;
+            }
 
             $newPost = Post::create([
-                'image_url'  => $url,
+                'image_url'  => $urls, // Array will be cast to JSON
                 'caption'    => $this->caption,
                 'ip_address' => $ip,
             ]);
@@ -184,7 +189,7 @@ new class extends Component
             Cache::put('last_upload_' . $ip, true, now()->addHour());
             Cache::put('last_upload_time_' . $ip, now(), now()->addHour());
 
-            $this->reset(['rawImage', 'compressedImage', 'caption', 'hashtagQuery', 'showSuggestions']);
+            $this->reset(['rawImage', 'compressedImages', 'caption', 'hashtagQuery', 'showSuggestions']);
             $this->dispatch('post-created');
 
         } catch (\Exception $e) {
@@ -214,170 +219,185 @@ new class extends Component
         @endif
 
         <form wire:submit.prevent="save" class="space-y-4">
-            {{-- Preview Section (Instagram-like) --}}
-            @if ($compressedImage)
-                <div class="relative w-full aspect-square sm:aspect-video rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                    <img id="image-preview" src="{{ $compressedImage->temporaryUrl() }}" class="h-full w-full object-contain">
-                    <button type="button" @click="$wire.set('compressedImage', null); $wire.set('rawImage', null)" 
-                        class="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full backdrop-blur-sm transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+        {{-- Preview Section (Instagram-like Multi-image Slider) --}}
+        @if (count($this->compressedImages) > 0)
+            <div x-data="{ 
+                activeSlide: 0, 
+                slides: {{ count($this->compressedImages) }},
+                next() { this.activeSlide = (this.activeSlide + 1) % this.slides },
+                prev() { this.activeSlide = (this.activeSlide - 1 + this.slides) % this.slides }
+            }" class="relative w-full aspect-square sm:aspect-video rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 group">
+                
+                {{-- Images --}}
+                <div class="h-full w-full flex transition-transform duration-300 ease-out" :style="'transform: translateX(-' + (activeSlide * 100) + '%)'">
+                    @foreach ($this->compressedImages as $index => $image)
+                        <div class="h-full w-full flex-shrink-0 flex items-center justify-center">
+                            <img src="{{ $image->temporaryUrl() }}" class="h-full w-full object-contain">
+                        </div>
+                    @endforeach
                 </div>
-            @endif
 
-            <div class="flex items-start gap-4">
-                {{-- User Avatar Placeholder --}}
-                <div class="flex-shrink-0">
-                    <div class="h-10 w-10 rounded-full bg-gradient-to-tr from-yellow-400 to-purple-600 p-[2px]">
-                        <div class="h-full w-full rounded-full bg-white dark:bg-gray-900 p-0.5">
-                            <div class="h-full w-full rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-bold">
-                                {{ substr(md5(request()->ip()), 0, 2) }}
-                            </div>
+                {{-- Slider Controls --}}
+                <template x-if="slides > 1">
+                    <div>
+                        <button type="button" @click="prev" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-1.5 rounded-full backdrop-blur-sm transition opacity-0 group-hover:opacity-100">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                        </button>
+                        <button type="button" @click="next" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-1.5 rounded-full backdrop-blur-sm transition opacity-0 group-hover:opacity-100">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                        </button>
+                        
+                        {{-- Dots --}}
+                        <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                            <template x-for="i in slides" :key="i-1">
+                                <div class="h-1.5 w-1.5 rounded-full transition-all" :class="activeSlide === (i-1) ? 'bg-white w-3' : 'bg-white/50'"></div>
+                            </template>
                         </div>
                     </div>
-                </div>
+                </template>
 
-                <div class="flex-grow pt-1 relative">
-                    <textarea
-                        wire:model.live="caption"
-                        rows="3"
-                        class="w-full resize-none border-none bg-transparent p-0 text-base text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:ring-0 {{ $blocked['banned'] ? 'opacity-40' : '' }}"
-                        placeholder="{{ $blocked['banned'] ? 'Sedang dalam jeda posting...' : 'Tulis caption mu... gunakan #hashtag' }}"
-                        {{ $blocked['banned'] ? 'disabled' : '' }}
-                    ></textarea>
+                {{-- Remove All Button --}}
+                <button type="button" @click="$wire.set('compressedImages', []); $wire.set('rawImage', null)" 
+                    class="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full backdrop-blur-sm transition z-10">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        @endif
 
-                    {{-- Hashtag Suggestions Dropdown --}}
-                    @if ($showSuggestions && $this->hashtagSuggestions->count() > 0)
-                        <div class="absolute z-20 left-0 right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
-                            @foreach ($this->hashtagSuggestions as $tag)
-                                <button type="button"
-                                    wire:click="appendHashtag('{{ $tag->name }}')"
-                                    class="hashtag-suggestion dark:hover:bg-gray-700">
-                                    <span class="font-medium text-blue-600">#{{ $tag->name }}</span>
-                                    <span class="text-xs text-gray-400 bg-gray-100 dark:bg-gray-900 rounded-full px-2 py-0.5">{{ $tag->count }}x</span>
-                                </button>
-                            @endforeach
+        <div class="flex items-start gap-4">
+            {{-- User Avatar Placeholder --}}
+            <div class="flex-shrink-0">
+                <div class="h-10 w-10 rounded-full bg-gradient-to-tr from-yellow-400 to-purple-600 p-[2px]">
+                    <div class="h-full w-full rounded-full bg-white dark:bg-gray-900 p-0.5">
+                        <div class="h-full w-full rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-bold">
+                            {{ substr(md5(request()->ip()), 0, 2) }}
                         </div>
-                    @endif
+                    </div>
                 </div>
             </div>
 
-            @error('rawImage') <span class="text-xs text-red-500 block">{{ $message }}</span> @enderror
-            @error('compressedImage') <span class="text-xs text-red-500 block">{{ $message }}</span> @enderror
-            @error('caption') <span class="text-xs text-red-500 block">{{ $message }}</span> @enderror
+            <div class="flex-grow pt-1 relative">
+                <textarea
+                    wire:model.live="caption"
+                    rows="3"
+                    class="w-full resize-none border-none bg-transparent p-0 text-base text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:ring-0 {{ $blocked['banned'] ? 'opacity-40' : '' }}"
+                    placeholder="{{ $blocked['banned'] ? 'Sedang dalam jeda posting...' : 'Tulis caption mu... gunakan #hashtag' }}"
+                    {{ $blocked['banned'] ? 'disabled' : '' }}
+                ></textarea>
 
-            {{-- Action Bar (Instagram-like) --}}
-            <div class="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-800">
-                <div class="flex items-center gap-1" x-data="{ showUploadMenu: false }">
-                    <div class="relative">
-                        <button type="button" @click="showUploadMenu = !showUploadMenu"
-                            class="p-2 text-gray-500 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition {{ $blocked['banned'] ? 'opacity-40 pointer-events-none' : '' }}">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                        </button>
-
-                        {{-- Upload Menu --}}
-                        <div x-show="showUploadMenu" @click.away="showUploadMenu = false"
-                            class="absolute z-30 left-0 bottom-full mb-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl py-2"
-                            x-transition:enter="transition ease-out duration-200"
-                            x-transition:enter-start="opacity-0 scale-95"
-                            x-transition:enter-end="opacity-100 scale-100">
-                            
-                            {{-- Image Upload --}}
-                            <label class="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer transition-colors" @click="showUploadMenu = false">
-                                <span class="text-xl">🖼️</span>
-                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Unggah Gambar</span>
-                                <input type="file" id="image-input" class="hidden" accept="image/*" {{ $blocked['banned'] ? 'disabled' : '' }}>
-                            </label>
-
-                            {{-- File Upload (Locked) --}}
-                            <div class="flex items-center gap-3 px-4 py-2 opacity-40 cursor-not-allowed">
-                                <span class="text-xl">📄</span>
-                                <div class="flex flex-col">
-                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Unggah File</span>
-                                    <span class="text-[10px] text-amber-600 font-semibold">Segera hadir</span>
-                                </div>
-                            </div>
-
-                            {{-- Video Upload (Locked) --}}
-                            <div class="flex items-center gap-3 px-4 py-2 opacity-40 cursor-not-allowed">
-                                <span class="text-xl">🎥</span>
-                                <div class="flex flex-col">
-                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Unggah Video</span>
-                                    <span class="text-[10px] text-amber-600 font-semibold">Segera hadir</span>
-                                </div>
-                            </div>
-                        </div>
+                {{-- Hashtag Suggestions Dropdown --}}
+                @if ($showSuggestions && $this->hashtagSuggestions->count() > 0)
+                    <div class="absolute z-20 left-0 right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
+                        @foreach ($this->hashtagSuggestions as $tag)
+                            <button type="button"
+                                wire:click="appendHashtag('{{ $tag->name }}')"
+                                class="hashtag-suggestion dark:hover:bg-gray-700">
+                                <span class="font-medium text-blue-600">#{{ $tag->name }}</span>
+                                <span class="text-xs text-gray-400 bg-gray-100 dark:bg-gray-900 rounded-full px-2 py-0.5">{{ $tag->count }}x</span>
+                            </button>
+                        @endforeach
                     </div>
-
-                    {{-- Emoji / Location / etc placeholders --}}
-                    <button type="button" class="p-2 text-gray-400 cursor-not-allowed">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </button>
-                </div>
-
-                @if ($blocked['banned'])
-                    <button type="button" disabled class="rounded-lg bg-gray-100 dark:bg-gray-800 px-5 py-1.5 text-sm font-semibold text-gray-400 cursor-not-allowed">
-                        ⏳ {{ Ban::minutesRemaining(request()->ip()) }}m
-                    </button>
-                @else
-                    <button type="submit" 
-                        class="rounded-full bg-blue-500 hover:bg-blue-600 px-6 py-1.5 text-sm font-bold text-white transition disabled:opacity-50 disabled:cursor-not-allowed" 
-                        wire:loading.attr="disabled"
-                        {{ !$compressedImage ? 'disabled' : '' }}>
-                        <span wire:loading.remove wire:target="save">Posting</span>
-                        <span wire:loading wire:target="save">...</span>
-                    </button>
                 @endif
             </div>
+        </div>
 
-            <script>
-            document.getElementById('image-input').addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (!file) return;
+        @error('rawImage') <span class="text-xs text-red-500 block">{{ $message }}</span> @enderror
+        @error('compressedImages.*') <span class="text-xs text-red-500 block">{{ $message }}</span> @enderror
+        @error('caption') <span class="text-xs text-red-500 block">{{ $message }}</span> @enderror
 
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    const img = new Image();
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
+        {{-- Action Bar (Separate Icons) --}}
+        <div class="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-800">
+            <div class="flex items-center gap-2">
+                {{-- Image Upload Icon --}}
+                <label class="p-2 text-gray-500 hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition cursor-pointer {{ $blocked['banned'] ? 'opacity-40 pointer-events-none' : '' }}" title="Unggah Gambar">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <input type="file" id="image-input" class="hidden" accept="image/*" multiple {{ $blocked['banned'] ? 'disabled' : '' }}>
+                </label>
 
-                        const maxSize = 1920;
-                        let { width, height } = img;
-                        if (width > height) {
-                            if (width > maxSize) {
-                                height *= maxSize / width;
-                                width = maxSize;
+                {{-- Video Upload Icon (Locked) --}}
+                <div class="p-2 text-gray-300 cursor-not-allowed group relative" title="Unggah Video (Segera)">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">Segera Hadir</span>
+                </div>
+
+                {{-- File Upload Icon (Locked) --}}
+                <div class="p-2 text-gray-300 cursor-not-allowed group relative" title="Unggah File (Segera)">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                    </svg>
+                    <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">Segera Hadir</span>
+                </div>
+            </div>
+
+            @if ($blocked['banned'])
+                <button type="button" disabled class="rounded-lg bg-gray-100 dark:bg-gray-800 px-5 py-1.5 text-sm font-semibold text-gray-400 cursor-not-allowed">
+                    ⏳ {{ Ban::minutesRemaining(request()->ip()) }}m
+                </button>
+            @else
+                <button type="submit" 
+                    class="rounded-full bg-blue-500 hover:bg-blue-600 px-6 py-1.5 text-sm font-bold text-white transition disabled:opacity-50 disabled:cursor-not-allowed" 
+                    wire:loading.attr="disabled"
+                    {{ count($this->compressedImages) === 0 ? 'disabled' : '' }}>
+                    <span wire:loading.remove wire:target="save">Bagikan</span>
+                    <span wire:loading wire:target="save">...</span>
+                </button>
+            @endif
+        </div>
+
+        <script>
+        document.getElementById('image-input').addEventListener('change', async function(e) {
+            const files = Array.from(e.target.files).slice(0, 10); // Max 10 images
+            if (files.length === 0) return;
+
+            const processedFiles = [];
+
+            for (const file of files) {
+                const compressedBlob = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        const img = new Image();
+                        img.onload = function() {
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            const maxSize = 1920;
+                            let { width, height } = img;
+                            if (width > height) {
+                                if (width > maxSize) {
+                                    height *= maxSize / width;
+                                    width = maxSize;
+                                }
+                            } else {
+                                if (height > maxSize) {
+                                    width *= maxSize / height;
+                                    height = maxSize;
+                                }
                             }
-                        } else {
-                            if (height > maxSize) {
-                                width *= maxSize / height;
-                                height = maxSize;
-                            }
-                        }
-
-                        canvas.width = width;
-                        canvas.height = height;
-                        ctx.drawImage(img, 0, 0, width, height);
-
-                        canvas.toBlob(function(blob) {
-                            const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), { type: 'image/jpeg' });
-                            @this.set('rawImage', file.name);
-                            @this.upload('compressedImage', compressedFile);
-                        }, 'image/jpeg', 0.8);
+                            canvas.width = width;
+                            canvas.height = height;
+                            ctx.drawImage(img, 0, 0, width, height);
+                            canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.8);
+                        };
+                        img.src = ev.target.result;
                     };
-                    img.src = ev.target.result;
-                };
-                reader.readAsDataURL(file);
+                    reader.readAsDataURL(file);
+                });
+
+                const compressedFile = new File([compressedBlob], file.name.replace(/\.[^/.]+$/, '.jpg'), { type: 'image/jpeg' });
+                processedFiles.push(compressedFile);
+            }
+
+            @this.uploadMultiple('compressedImages', processedFiles, (uploadedFilenames) => {
+                // Done uploading
             });
-            </script>
-        </form>
+        });
+        </script>
+    </form>
     </div>
 
     {{-- Popular Hashtags Moved Outside Form --}}

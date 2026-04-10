@@ -6,7 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Post extends Model
 {
-    protected $fillable = ['image_url', 'caption', 'likes', 'dislikes'];
+    protected $fillable = ['image_url', 'caption', 'likes', 'dislikes', 'ip_address'];
+
+    protected $casts = [
+        'image_url' => 'array',
+    ];
 
     public function comments()
     {

@@ -138,11 +138,44 @@ new class extends Component
                 $nickname  = 'Warga-' . substr(md5($post->ip_address ?? $post->id), 0, 4);
             @endphp
             <article class="post-card">
-                <!-- Image -->
-                <div class="relative w-full bg-gray-100 dark:bg-gray-800 flex justify-center items-center overflow-hidden max-h-[280px] sm:max-h-[420px] md:max-h-[560px]">
-                    <img src="{{ $post->image_url }}" alt="Post image"
-                         class="w-full h-auto max-h-[280px] sm:max-h-[420px] md:max-h-[560px] object-contain"
-                         loading="lazy">
+                <!-- Multi-image Slider (Instagram-like) -->
+                @php
+                    $images = is_array($post->image_url) ? $post->image_url : [$post->image_url];
+                @endphp
+                <div x-data="{ 
+                    activeSlide: 0, 
+                    slides: {{ count($images) }},
+                    next() { this.activeSlide = (this.activeSlide + 1) % this.slides },
+                    prev() { this.activeSlide = (this.activeSlide - 1 + this.slides) % this.slides }
+                }" class="relative w-full bg-gray-100 dark:bg-gray-800 overflow-hidden group">
+                    
+                    {{-- Image Container --}}
+                    <div class="flex transition-transform duration-300 ease-out" :style="'transform: translateX(-' + (activeSlide * 100) + '%)'">
+                        @foreach ($images as $url)
+                            <div class="w-full flex-shrink-0 flex justify-center items-center bg-gray-100 dark:bg-gray-800 min-h-[280px] sm:min-h-[420px] md:min-h-[560px]">
+                                <img src="{{ $url }}" alt="Post image"
+                                     class="w-full h-auto max-h-[280px] sm:max-h-[420px] md:max-h-[560px] object-contain"
+                                     loading="lazy">
+                            </div>
+                        @endforeach
+                    </div>
+
+                    {{-- Controls --}}
+                    @if (count($images) > 1)
+                        <button type="button" @click="prev" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white p-1.5 rounded-full backdrop-blur-sm transition opacity-0 group-hover:opacity-100 z-10">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                        </button>
+                        <button type="button" @click="next" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white p-1.5 rounded-full backdrop-blur-sm transition opacity-0 group-hover:opacity-100 z-10">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                        </button>
+
+                        {{-- Indicators --}}
+                        <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                            <template x-for="i in slides" :key="i-1">
+                                <div class="h-1.5 w-1.5 rounded-full transition-all shadow-sm" :class="activeSlide === (i-1) ? 'bg-white w-3' : 'bg-white/50'"></div>
+                            </template>
+                        </div>
+                    @endif
                 </div>
 
                 <!-- Post Content -->
