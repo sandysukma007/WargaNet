@@ -129,16 +129,13 @@ new class extends Component
     }
 };
 ?>
-
 <div class="space-y-6 pb-20">
-    <!-- Create Post -->
     <livewire:create-post />
-
-    <!-- Feed Section -->
     <div class="space-y-6">
         @foreach ($this->posts as $post)
             @php
                 $userAction = $this->userInteractions[$post->id] ?? null;
+                $nickname  = 'Warga-' . substr(md5($post->ip_address ?? $post->id), 0, 4);
             @endphp
             <article class="post-card">
                 <!-- Image -->
@@ -164,62 +161,60 @@ new class extends Component
                     </div>
 
                     @if($post->caption)
-                    @php
-                        $caption   = $post->caption;
-                        $isLong    = mb_strlen($caption) > 30;
-$short     = $isLong ? mb_substr($caption, 0, 30) : $caption;
-                        $nickname  = 'Warga-' . substr(md5($post->ip_address ?? $post->id), 0, 4);
-                    @endphp
-                    <div x-data="{ expanded: false }" class="caption-container">
+                        @php
+                            $caption   = $post->caption;
+                            $isLong    = mb_strlen($caption) > 30;
+                            $short     = $isLong ? mb_substr($caption, 0, 30) : $caption;
+                        @endphp
+                        <div x-data="{ expanded: false }" class="caption-container">
                             <span class="font-bold mr-1">{{ $nickname }}</span>
 
-                        @if($isLong)
-                            {{-- Collapsed: show first 30 chars --}}
-                            <span x-show="!expanded">
-                                {!! $this->renderCaption($short) !!}<span class="text-gray-400 dark:text-gray-500">...</span>
-                                <button @click="expanded = true"
-                                    class="text-gray-500 dark:text-gray-400 font-semibold ml-1 hover:text-gray-700 dark:hover:text-gray-300 transition-colors text-xs">
-                                    Lihat selengkapnya
-                                </button>
-                            </span>
+                            @if($isLong)
+                                {{-- Collapsed --}}
+                                <span x-show="!expanded">
+                                    {!! $this->renderCaption($short) !!}<span class="text-gray-400 dark:text-gray-500">...</span>
+                                    <button @click="expanded = true"
+                                        class="text-gray-500 dark:text-gray-400 font-semibold ml-1 hover:text-gray-700 dark:hover:text-gray-300 transition-colors text-xs">
+                                        Lihat selengkapnya
+                                    </button>
+                                </span>
 
-                            {{-- Expanded: show full caption with slide animation --}}
-                            <span x-show="expanded"
-                                x-transition:enter="transition-all ease-out duration-300"
-                                x-transition:enter-start="opacity-0 max-h-0"
-                                x-transition:enter-end="opacity-100 max-h-96"
-                                x-transition:leave="transition-all ease-in duration-200"
-x-transition:leave-start="opacity-100 max-h-96"
-                                x-transition:leave-end="opacity-0 max-h-0"
-                                class="overflow-hidden inline">
+                                {{-- Expanded --}}
+                                <span x-show="expanded"
+                                    x-transition:enter="transition-all ease-out duration-300"
+                                    x-transition:enter-start="opacity-0 max-h-0"
+                                    x-transition:enter-end="opacity-100 max-h-96"
+                                    x-transition:leave="transition-all ease-in duration-200"
+                                    x-transition:leave-start="opacity-100 max-h-96"
+                                    x-transition:leave-end="opacity-0 max-h-0"
+                                    class="overflow-hidden inline">
+                                    {!! $this->renderCaption($caption) !!}
+                                    <button @click="expanded = false"
+                                        class="text-gray-400 dark:text-gray-500 font-semibold ml-1 hover:text-gray-600 dark:hover:text-gray-400 transition-colors text-xs block mt-0.5">
+                                        Lihat sedikit
+                                    </button>
+                                </span>
+                            @else
                                 {!! $this->renderCaption($caption) !!}
-                                <button @click="expanded = false"
-                                    class="text-gray-400 dark:text-gray-500 font-semibold ml-1 hover:text-gray-600 dark:hover:text-gray-400 transition-colors text-xs block mt-0.5">
-                                    Lihat sedikit
-                                </button>
-                            </span>
-                        @else
-{!! $this->renderCaption($caption) !!}
-                        @endif
-                    </div>
+                            @endif
+                        </div>
                     @endif
 
                     <!-- Comments -->
-<div class="space-y-1">
+                    <div class="space-y-1">
                         @if($post->comments->count() > 0)
                             <div class="text-gray-500 dark:text-gray-400 text-[13px] mb-2">{{ $post->comments->count() }} komentar</div>
                         @endif
-@foreach ($post->comments->take(3) as $comment)
-<div class="text-sm text-gray-900 dark:text-gray-100 leading-tight">
-  <span class="font-bold mr-1">{{ $comment->nickname }}</span>{{ $comment->content }}
-</div>
+                        @foreach ($post->comments->take(3) as $comment)
+                            <div class="text-sm text-gray-900 dark:text-gray-100 leading-tight">
+                                <span class="font-bold mr-1">{{ $comment->nickname }}</span>{{ $comment->content }}
+                            </div>
                         @endforeach
 
                         <div class="text-[11px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mt-2 mb-1">
-{{ $post->created_at->format('d M Y') }}
+                            {{ $post->created_at->format('d M Y') }}
                         </div>
 
-                        {{-- Error display will be handled by Livewire listener --}}
                         <div x-data="{ error: '', init() { $wire.on('comment_error', (msg) => { this.error = msg; setTimeout(() => this.error = '', 5000) }) } }" x-show="error" x-transition class="text-xs font-semibold text-red-500 mt-1 bg-red-50 p-2 rounded" x-text="error"></div>
 
                         <div class="relative mt-2 pt-3 border-t border-gray-100 dark:border-gray-700">
@@ -233,14 +228,10 @@ x-transition:leave-start="opacity-100 max-h-96"
             </article>
         @endforeach
 
-@if ($this->posts->hasMorePages())
+        @if ($this->posts->hasMorePages())
              <div wire:infinite-scroll="nextPage" class="text-center py-8">
                 <div class="animate-spin inline-block w-6 h-6 border-4 rounded-full border-gray-300 border-t-blue-600 mx-auto"></div>
             </div>
         @endif
     </div>
-
-    @if ($this->posts->hasMorePages())
-        <div wire:infinite-scroll="nextPage"></div>
-    @endif
 </div>
