@@ -269,7 +269,7 @@ public function addStagedImage(): void
         </div>
     @endif
 
-    <form wire:submit="save" class="space-y-4">
+    <form wire:submit="save" class="space-y-4" wire:key="create-post-form">
         <div class="flex gap-4 items-start">
             {{-- Left Side: Preview Section --}}
             <div class="flex-shrink-0" style="width: 100px; height: 100px; min-width: 100px; min-height: 100px;">
