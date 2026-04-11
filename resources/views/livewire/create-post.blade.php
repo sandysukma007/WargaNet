@@ -1,3 +1,4 @@
+<div class="create-post-root">
 <?php
 
 use App\Models\Post;
@@ -259,7 +260,7 @@ public function addStagedImage(): void
             <span class="text-lg">🚫</span>
             <p class="text-sm text-red-700 font-medium">{{ session('error') }}</p>
         </div>
-    @endif
+    </div>
 
     <form wire:submit="save" class="space-y-4">
         <div class="flex gap-4 items-start">
@@ -448,5 +449,5 @@ class="hashtag-chip text-gray-600 dark:text-gray-300 dark:bg-gray-800">
                 </button>
             @endforeach
         </div>
-    @endif
+    @endif>
 </div>
