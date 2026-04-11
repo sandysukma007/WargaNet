@@ -355,7 +355,7 @@ class="w-full resize-none border-none bg-transparent p-0 text-sm text-black dark
 
 @if (!$blocked['banned'])
                 <button type="submit"
-                    class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2 rounded-lg font-bold transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
+                    class="bg-emerald-500 hover:bg-emerald-600 px-6 py-2 rounded-lg font-bold transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
                     wire:loading.attr="disabled"
                     wire:loading.target="save"
                     wire:target="save">
