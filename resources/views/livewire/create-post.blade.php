@@ -338,7 +338,7 @@ class="w-full resize-none border-none bg-transparent p-0 text-sm text-black dark
         <div class="mt-4 pt-2 border-t border-gray-50 dark:border-gray-800/50 flex items-center justify-between">
             <div class="flex items-center gap-2">
                 {{-- Quick Image Upload --}}
-text-[10px] font-bold text-black bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer transition-colors {{ $blocked['banned'] ? 'opacity-40 pointer-events-none' : '' }}">
+<label for="image-input" class="text-[10px] font-bold text-black bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer transition-colors flex items-center gap-1 px-2 py-1 rounded-md {{ $blocked['banned'] ? 'opacity-40 pointer-events-none' : '' }}">
                     <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
@@ -349,10 +349,10 @@ text-[10px] font-bold text-black bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 
 
             @if (!$blocked['banned'])
                 <button type="submit"
-                    class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-bold text-sm transition-all shadow-md hover:shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                     wire:loading.attr="disabled"
                     wire:loading.target="save"
-disabled="{{ $blocked['banned'] || $isProcessing || trim($caption) === '' }}"
+disabled="{{ $blocked['banned'] || $isProcessing || empty(trim($caption)) || count($compressedImages) === 0 }}"
                     wire:target="save">
                     <span wire:loading.remove>Posting</span>
                     <span wire:loading>
@@ -444,8 +444,8 @@ disabled="{{ $blocked['banned'] || $isProcessing || trim($caption) === '' }}"
             @foreach ($this->popularHashtags as $tag)
                 <button type="button"
                     wire:click="appendHashtag('{{ $tag->name }}')"
-                    class="hashtag-chip text-gray-600 dark:text-gray-300 dark:bg-gray-800">
-                    <span class="text-gray-400">{{ $tag->count }}</span>
+                    class="hashtag-chip text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md text-xs font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    #{{ $tag->name }} <span class="text-gray-400 text-[10px]">({{ $tag->count }})</span>
                 </button>
             @endforeach
         </div>

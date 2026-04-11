@@ -1,11 +1,14 @@
-# ✅ Livewire Multiple Root Elements Fix - COMPLETED
+# Task Progress: Fix UI Issues in Create Post
 
-## Fixes Applied
-1. ✅ Wrapped `create-post.blade.php` in single root `<div class="create-post-root">`
-2. ✅ Fixed Blade syntax error: Corrected mismatched `@endif` around session error div
-3. ✅ Fixed Blade syntax error: Added missing `@endif` for popular hashtags section
-4. ✅ Verified `feed.blade.php` already had single root
+## Steps to Complete (Approved Plan):
 
-**Status**: ParseError resolved. Both components have exactly **one root HTML element**. Original Livewire exception fixed.
+- [x] **Step 1**: Create TODO.md with plan breakdown ✅
+- [x] **Step 2**: Edit `resources/views/livewire/create-post.blade.php` 
+  - ✅ Fix CSS leak by adding missing `<label>` tag
+  - ✅ Fix hashtag chips to show name + count  
+  - ✅ Verify posting button text
+- [ ] **Step 3**: Rebuild Tailwind assets (`npm run build`)
+- [ ] **Step 4**: Test changes (no CSS leak, hashtags show #name (count), posting button visible)
+- [ ] **Step 5**: Mark complete and attempt_completion
 
-**Test**: Refresh browser - feed page should load without errors.
+**Status**: Starting edits...
