@@ -244,6 +244,7 @@ public function addStagedImage(): void
         } catch (\Exception $e) {
             $this->dispatch('error', message: 'Gagal memproses postingan: ' . $e->getMessage());
             $this->isProcessing = false;
+            return;
         } finally {
             $this->isProcessing = false;
         }
