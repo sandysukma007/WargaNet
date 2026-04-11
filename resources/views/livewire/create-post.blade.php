@@ -153,11 +153,16 @@ public function addStagedImage(): void
 
 
 
-            $this->validate([
-            'compressedImages' => 'required|array|min:1',
-            'compressedImages.*' => 'image|max:5120', 
-            'caption' => 'required|string|max:1000|min:1',
-        ]);
+        if (empty(trim($this->caption))) {
+            $this->dispatch('error', message: 'Caption tidak boleh kosong!');
+            $this->isProcessing = false;
+            return;
+        }
+        if (count($this->compressedImages) === 0) {
+            $this->dispatch('error', message: 'Harap tambahkan minimal 1 foto!');
+            $this->isProcessing = false;
+            return;
+        }
 
         try {
             $urls = [];
@@ -350,11 +355,11 @@ class="w-full resize-none border-none bg-transparent p-0 text-sm text-black dark
 
             @if (!$blocked['banned'])
                 <button type="submit"
-class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-8 py-3 rounded-xl font-bold text-sm shadow-lg hover:shadow-xl hover:from-emerald-600 hover:to-teal-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ring-2 ring-emerald-400/50 hover:ring-emerald-500/70 flex items-center gap-2 min-w-[120px] justify-center h-12 border-0 appearance-none focus:outline-none focus:ring-4 focus:ring-emerald-300"
+class="bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white px-6 py-2.5 rounded-lg font-bold text-sm shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed min-w-[100px] h-11 border border-emerald-400/50 hover:border-emerald-500/70 focus:outline-none focus:ring-2 focus:ring-emerald-400"
                     wire:loading.attr="disabled"
                     wire:loading.target="save"
-disabled="{{ $blocked['banned'] || $isProcessing }}" 
-                    wire:target="save">
+wire:loading.attr="disabled"
+                     wire:target="save">
                     <span wire:loading.remove>Posting</span>
                     <span wire:loading>
                         <svg class="animate-spin -ml-1 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
