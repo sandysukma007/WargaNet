@@ -243,7 +243,7 @@ new class extends Component
                 @endphp
                 @if ($imageCount > 0)
                     <div class="relative w-full h-full rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 shadow-sm hover:shadow-md group">
-class="grid grid-cols-2 gap-1 h-full p-1"
+<div class="grid grid-cols-2 gap-1 h-full p-1">
                             @foreach ($displayImages as $index => $image)
                                 <div class="relative rounded overflow-hidden bg-gray-100 dark:bg-gray-700 h-full min-h-[24px]">
                                     <img src="{{ $image->temporaryUrl() }}" class="w-full h-full object-cover" alt="Preview {{ $index + 1 }}">
@@ -315,7 +315,7 @@ class="grid grid-cols-2 gap-1 h-full p-1"
 
             @if (!$blocked['banned'])
                 <button type="submit"
-bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors shadow-sm
+class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors shadow-sm"
                     wire:loading.attr="disabled"
                     {{ (count($this->compressedImages) === 0 && empty(trim($this->caption))) ? 'data-[disabled=true]' : '' }}
                     wire:target="save">
@@ -384,8 +384,7 @@ bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibol
             @foreach ($this->popularHashtags as $tag)
                 <button type="button"
                     wire:click="appendHashtag('{{ $tag->name }}')"
-                    class="hashtag-chip dark:bg-gray-800 dark:text-gray-300">
-text-gray-600 dark:text-gray-300
+class="hashtag-chip text-gray-600 dark:text-gray-300 dark:bg-gray-800">
                     <span class="text-gray-400">{{ $tag->count }}</span>
                 </button>
             @endforeach
