@@ -13,12 +13,13 @@ new class extends Component
 {
     use WithFileUploads;
 
-    public $rawImage;
+public $rawImage;
     public $currentImage;
     public $compressedImages = []; // Array to store multiple images
     public $caption = '';
     public string $hashtagQuery = '';
     public bool $showSuggestions = false;
+    public bool $isProcessing = false;
 
 
 
@@ -97,7 +98,7 @@ new class extends Component
         return false;
     }
 
-    public function addStagedImage(): void
+public function addStagedImage(): void
     {
         if (!$this->currentImage) {
             return;
@@ -107,8 +108,21 @@ new class extends Component
             $this->currentImage = null;
             return;
         }
+
+        // Check for duplicate by file size and name
+        $fileSize = $this->currentImage->getSize();
+        $fileName = $this->currentImage->getClientOriginalName();
+        foreach ($this->compressedImages as $existing) {
+            if ($existing->getSize() === $fileSize && $existing->getClientOriginalName() === $fileName) {
+                $this->dispatch('error', message: 'Foto ini sudah ditambahkan.');
+                $this->currentImage = null;
+                return;
+            }
+        }
+
         $this->compressedImages[] = $this->currentImage;
         $this->currentImage = null;
+        $this->dispatch('notify', message: 'Foto ditambahkan!');
     }
 
     public function removeImage($index): void
@@ -162,8 +176,16 @@ new class extends Component
                         curl_setopt($ch, CURLOPT_POST, true);
                         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                         curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+                        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
                         $response = curl_exec($ch);
+                        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                         curl_close($ch);
+
+                        if ($httpCode !== 200 || !$response) {
+                            $this->dispatch('error', message: 'Timeout atau error pengecekan gambar.');
+                            $this->isProcessing = false;
+                            return;
+                        }
 
                         $output = json_decode($response, true);
 
@@ -171,8 +193,13 @@ new class extends Component
                             $nudity = $output['nudity'];
                             if ($nudity['sexual_activity'] > 0.5 || $nudity['sexual_display'] > 0.5 || $nudity['erotica'] > 0.5) {
                                 $this->dispatch('error', message: 'Salah satu gambar terdeteksi mengandung konten pornografi! Postingan dibatalkan.');
+                                $this->isProcessing = false;
                                 return;
                             }
+                        } else {
+                            $this->dispatch('error', message: 'Gagal memverifikasi gambar (API error).');
+                            $this->isProcessing = false;
+                            return;
                         }
                     }
 
@@ -315,9 +342,10 @@ new class extends Component
 
             @if (!$blocked['banned'])
                 <button type="submit"
-class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors shadow-sm"
+                    class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     wire:loading.attr="disabled"
-                    {{ (count($this->compressedImages) === 0 && empty(trim($this->caption))) ? 'data-[disabled=true]' : '' }}
+                    wire:loading.target="save"
+                    disabled="{{ $blocked['banned'] || (count($this->compressedImages) === 0 && empty(trim($this->caption))) || $isProcessing }}"
                     wire:target="save">
                     <span wire:loading.remove>Posting</span>
                     <span wire:loading>
@@ -332,47 +360,64 @@ class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-
         </div>
 
         <script>
+        let isUploading = false;
         document.getElementById('image-input').addEventListener('change', async function(e) {
+            if (isUploading) {
+                e.target.value = '';
+                return;
+            }
+
             const file = e.target.files[0];
             if (!file) return;
 
-            const compressedBlob = await new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    const img = new Image();
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        const maxSize = 1920;
-                        let { width, height } = img;
-                        if (width > height) {
-                            if (width > maxSize) {
-                                height *= maxSize / width;
-                                width = maxSize;
+            isUploading = true;
+            const uploadLabel = this.parentElement;
+            uploadLabel.classList.add('opacity-50', 'cursor-not-allowed');
+
+            try {
+                const compressedBlob = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        const img = new Image();
+                        img.onload = function() {
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            const maxSize = 1920;
+                            let { width, height } = img;
+                            if (width > height) {
+                                if (width > maxSize) {
+                                    height *= maxSize / width;
+                                    width = maxSize;
+                                }
+                            } else {
+                                if (height > maxSize) {
+                                    width *= maxSize / height;
+                                    height = maxSize;
+                                }
                             }
-                        } else {
-                            if (height > maxSize) {
-                                width *= maxSize / height;
-                                height = maxSize;
-                            }
-                        }
-                        canvas.width = width;
-                        canvas.height = height;
-                        ctx.drawImage(img, 0, 0, width, height);
-                        canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.8);
+                            canvas.width = width;
+                            canvas.height = height;
+                            ctx.drawImage(img, 0, 0, width, height);
+                            canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.8);
+                        };
+                        img.src = ev.target.result;
                     };
-                    img.src = ev.target.result;
-                };
-                reader.readAsDataURL(file);
-            });
+                    reader.readAsDataURL(file);
+                });
 
-            const compressedFile = new File([compressedBlob], file.name.replace(/\.[^/.]+$/, '.jpg'), { type: 'image/jpeg' });
+                const compressedFile = new File([compressedBlob], 'compressed_' + Date.now() + '.jpg', { type: 'image/jpeg' });
 
-            @this.upload('currentImage', compressedFile, () => {
-                @this.call('addStagedImage');
-            });
-
-            e.target.value = '';
+                @this.upload('currentImage', compressedFile, () => {
+                    @this.call('addStagedImage');
+                });
+            } catch (error) {
+                console.error('Upload error:', error);
+                @this.dispatch('error', { message: 'Gagal memproses foto.' });
+            } finally {
+                isUploading = false;
+                uploadLabel.classList.remove('opacity-50', 'cursor-not-allowed');
+                e.target.value = '';
+            }
         });
         </script>
     </form>
