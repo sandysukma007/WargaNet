@@ -143,9 +143,7 @@ new class extends Component
                 {{-- Card Header --}}
                 <div class="px-3 py-2 flex items-center justify-between shadow-sm bg-white dark:bg-gray-900">
                     <div class="flex items-center gap-2">
-                        <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center text-white text-[10px] font-bold shadow-sm">
-                            {{ strtoupper(substr($nickname, 6, 1)) }}
-                        </div>
+
                         <div class="flex flex-col -space-y-0.5">
                             <span class="font-bold text-xs text-gray-900 dark:text-gray-100">{{ $nickname }}</span>
                             <span class="text-[9px] text-gray-400 dark:text-gray-500 font-medium">

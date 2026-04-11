@@ -1,8 +1,8 @@
-# Fix Create Post Component
+# Task: Fix UI issues (photo grid, button colors, remove feed badge)
 
 ## Steps:
-- [x] Step 1: Add removeImage() method to PHP class
-- [x] Step 2: Rewrite photo preview to grid layout (2 cols, max 4 shown + badge)
-- [x] Step 3: Fix submit button (spinner, disabled states)
-- [x] Step 4: Test functionality (changes applied, test manually)
-- [x] Step 5: Complete
+- [x] 1. Edit feed.blade.php - remove blue gradient avatar badge div
+- [x] 2. Edit create-post.blade.php - change photo preview grid to cols-1 + all blue buttons to gray
+- [x] 3. Verify changes work (photos 1-per-grid, gray buttons, no feed badge)
+- [x] 4. Task complete
+

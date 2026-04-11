@@ -243,7 +243,7 @@ new class extends Component
                 @endphp
                 @if ($imageCount > 0)
                     <div class="relative w-full h-full rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 shadow-sm hover:shadow-md group">
-                        <div class="grid grid-cols-2 gap-1 h-full p-1">
+grid grid-cols-1 gap-1 h-full p-1
                             @foreach ($displayImages as $index => $image)
                                 <div class="relative rounded overflow-hidden bg-gray-100 dark:bg-gray-700 h-full min-h-[24px]">
                                     <img src="{{ $image->temporaryUrl() }}" class="w-full h-full object-cover" alt="Preview {{ $index + 1 }}">
@@ -278,7 +278,7 @@ new class extends Component
                 @else
                     {{-- Empty State --}}
                     <label for="image-input" class="relative w-full h-full rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800/50 shadow-sm hover:shadow-md flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition group {{ $blocked['banned'] ? 'opacity-40 pointer-events-none' : '' }}">
-                        <svg class="w-6 h-6 text-blue-500 mb-1 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+text-gray-500 mb-1 group-hover:scale-110
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                         <span class="text-[8px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Foto</span>
@@ -304,7 +304,7 @@ new class extends Component
         <div class="mt-4 pt-2 border-t border-gray-50 dark:border-gray-800/50 flex items-center justify-between">
             <div class="flex items-center gap-2">
                 {{-- Quick Image Upload --}}
-                <label class="flex items-center gap-1.5 p-1.5 px-3 text-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-lg transition cursor-pointer hover:bg-blue-100 {{ $blocked['banned'] ? 'opacity-40 pointer-events-none' : '' }}">
+text-gray-600 bg-gray-100 dark:bg-gray-800
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
@@ -315,7 +315,7 @@ new class extends Component
 
             @if (!$blocked['banned'])
                 <button type="submit"
-                    class="inline-flex items-center gap-1 rounded-lg bg-blue-600 hover:bg-blue-700 px-6 py-2 text-xs font-bold text-white shadow-sm transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed data-[disabled]:bg-gray-300 dark:data-[disabled]:bg-gray-700"
+bg-gray-500 hover:bg-gray-600
                     wire:loading.attr="disabled"
                     {{ (count($this->compressedImages) === 0 && empty(trim($this->caption))) ? 'data-[disabled=true]' : '' }}
                     wire:target="save">
@@ -385,7 +385,7 @@ new class extends Component
                 <button type="button"
                     wire:click="appendHashtag('{{ $tag->name }}')"
                     class="hashtag-chip dark:bg-gray-800 dark:text-gray-300">
-                    <span class="text-blue-500 font-semibold">#{{ $tag->name }}</span>
+text-gray-500 font-semibold
                     <span class="text-gray-400">{{ $tag->count }}</span>
                 </button>
             @endforeach
