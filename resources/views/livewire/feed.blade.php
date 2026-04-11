@@ -145,7 +145,7 @@ new class extends Component
                     <div class="flex items-center gap-2">
 
                         <div class="flex flex-col -space-y-0.5">
-                            <span class="font-bold text-xs text-gray-900 dark:text-gray-100">{{ $nickname }}</span>
+text-xs text-black dark:text-black
                             <span class="text-[9px] text-gray-400 dark:text-gray-500 font-medium">
                                 {{ $post->created_at->diffForHumans(null, true) }} ago
                             </span>
@@ -197,7 +197,7 @@ new class extends Component
                 <!-- Post Body -->
                 <div class="p-2.5">
                     @if($post->caption)
-                        <div class="text-[13px] leading-relaxed text-gray-800 dark:text-gray-200 mb-3 font-medium">
+text-[13px] leading-relaxed text-black dark:text-black mb-3 font-medium
                             {!! $this->renderCaption($post->caption) !!}
                         </div>
                     @endif
@@ -220,8 +220,8 @@ new class extends Component
                         <div class="space-y-1.5">
                             @foreach ($post->comments->take(2) as $comment)
                                 <div class="text-[11px] leading-relaxed flex items-start gap-1.5">
-                                    <span class="font-bold text-gray-900 dark:text-gray-100">{{ $comment->nickname }}</span>
-                                    <span class="text-gray-600 dark:text-gray-400">{{ $comment->content }}</span>
+font-bold text-black dark:text-black
+text-black dark:text-black
                                 </div>
                             @endforeach
                         </div>

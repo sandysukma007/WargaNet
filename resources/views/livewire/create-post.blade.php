@@ -325,7 +325,7 @@ public function addStagedImage(): void
                     <textarea
                         wire:model.live="caption"
                         style="min-height: 80px;"
-                        class="w-full resize-none border-none bg-transparent p-0 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:ring-0 {{ $blocked['banned'] ? 'opacity-40' : '' }}"
+class="w-full resize-none border-none bg-transparent p-0 text-sm text-black dark:text-black placeholder-gray-400 focus:ring-0 {{ $blocked['banned'] ? 'opacity-40' : '' }}"
                         placeholder="{{ $blocked['banned'] ? 'Sabar ya...' : 'Ada cerita apa hari ini?' }}"
                         {{ $blocked['banned'] ? 'disabled' : '' }}
                     ></textarea>
@@ -337,7 +337,7 @@ public function addStagedImage(): void
         <div class="mt-4 pt-2 border-t border-gray-50 dark:border-gray-800/50 flex items-center justify-between">
             <div class="flex items-center gap-2">
                 {{-- Quick Image Upload --}}
-<label for="image-input" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold text-gray-600 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer transition-colors {{ $blocked['banned'] ? 'opacity-40 pointer-events-none' : '' }}">
+text-[10px] font-bold text-black bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer transition-colors {{ $blocked['banned'] ? 'opacity-40 pointer-events-none' : '' }}">
                     <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
@@ -351,7 +351,7 @@ public function addStagedImage(): void
                     class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     wire:loading.attr="disabled"
                     wire:loading.target="save"
-disabled="{{ $blocked['banned'] || $isProcessing }}"
+disabled="{{ $blocked['banned'] || $isProcessing || trim($caption) === '' }}"
                     wire:target="save">
                     <span wire:loading.remove>Posting</span>
                     <span wire:loading>
