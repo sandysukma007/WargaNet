@@ -260,7 +260,7 @@ public function addStagedImage(): void
             <span class="text-lg">🚫</span>
             <p class="text-sm text-red-700 font-medium">{{ session('error') }}</p>
         </div>
-    </div>
+    @endif
 
     <form wire:submit="save" class="space-y-4">
         <div class="flex gap-4 items-start">
@@ -444,10 +444,10 @@ disabled="{{ $blocked['banned'] || $isProcessing || trim($caption) === '' }}"
             @foreach ($this->popularHashtags as $tag)
                 <button type="button"
                     wire:click="appendHashtag('{{ $tag->name }}')"
-class="hashtag-chip text-gray-600 dark:text-gray-300 dark:bg-gray-800">
+                    class="hashtag-chip text-gray-600 dark:text-gray-300 dark:bg-gray-800">
                     <span class="text-gray-400">{{ $tag->count }}</span>
                 </button>
             @endforeach
         </div>
-    @endif>
+    @endif
 </div>
