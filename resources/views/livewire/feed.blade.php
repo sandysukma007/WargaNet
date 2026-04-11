@@ -1,3 +1,4 @@
+<div class="feed-root">
 <?php
 
 use App\Models\Post;
@@ -129,6 +130,7 @@ new class extends Component
     }
 };
 ?>
+
 <div class="space-y-8 pb-20 px-1 sm:px-0">
     <div class="mb-8">
         <livewire:create-post />
@@ -143,9 +145,10 @@ new class extends Component
                 {{-- Card Header --}}
                 <div class="px-3 py-2 flex items-center justify-between shadow-sm bg-white dark:bg-gray-900">
                     <div class="flex items-center gap-2">
+                        <span class="text-xs text-black dark:text-black font-bold">{{ $nickname }}</span>
 
                         <div class="flex flex-col -space-y-0.5">
-text-xs text-black dark:text-black
+                            <span class="text-xs text-black dark:text-black font-bold">{{ $nickname }}</span>
                             <span class="text-[9px] text-gray-400 dark:text-gray-500 font-medium">
                                 {{ $post->created_at->diffForHumans(null, true) }} ago
                             </span>
@@ -197,9 +200,9 @@ text-xs text-black dark:text-black
                 <!-- Post Body -->
                 <div class="p-2.5">
                     @if($post->caption)
-text-[13px] leading-relaxed text-black dark:text-black mb-3 font-medium
+                        <p class="text-[13px] leading-relaxed text-black dark:text-black mb-3 font-medium">
                             {!! $this->renderCaption($post->caption) !!}
-                        </div>
+                        </p>
                     @endif
 
                     <!-- Interactions -->
@@ -220,8 +223,8 @@ text-[13px] leading-relaxed text-black dark:text-black mb-3 font-medium
                         <div class="space-y-1.5">
                             @foreach ($post->comments->take(2) as $comment)
                                 <div class="text-[11px] leading-relaxed flex items-start gap-1.5">
-font-bold text-black dark:text-black
-text-black dark:text-black
+                                    <span class="font-bold text-black dark:text-black">{{ $comment->nickname }}:</span>
+                                    <span class="text-black dark:text-black">{{ $comment->content }}</span>
                                 </div>
                             @endforeach
                         </div>
@@ -253,4 +256,5 @@ text-black dark:text-black
             </div>
         @endif
     </div>
+</div>
 </div>
