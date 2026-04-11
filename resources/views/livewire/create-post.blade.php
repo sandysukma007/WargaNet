@@ -133,11 +133,14 @@ public function addStagedImage(): void
 
     public function save()
     {
+        $this->isProcessing = true;
+        
         $ip = request()->ip();
         $blocked = $this->blocked;
 
         if ($blocked['banned']) {
             $this->dispatch('error', message: $blocked['message']);
+            $this->isProcessing = false;
             return;
         }
 
@@ -147,11 +150,7 @@ public function addStagedImage(): void
             return;
         }
 
-        // Post must have either images or a caption
-        if (count($this->compressedImages) === 0 && empty(trim($this->caption))) {
-            $this->dispatch('error', message: 'Postingan tidak boleh kosong. Unggah foto atau tulis caption.');
-            return;
-        }
+
 
         $this->validate([
             'compressedImages.*' => 'nullable|image|max:5120', // Each image max 5MB
@@ -237,6 +236,9 @@ public function addStagedImage(): void
 
         } catch (\Exception $e) {
             $this->dispatch('error', message: 'Gagal memproses postingan: ' . $e->getMessage());
+            $this->isProcessing = false;
+        } finally {
+            $this->isProcessing = false;
         }
     }
 };
@@ -269,7 +271,7 @@ public function addStagedImage(): void
                     $hiddenCount = $imageCount - 4;
                 @endphp
                 @if ($imageCount > 0)
-                    <div class="relative w-full h-full rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 shadow-sm hover:shadow-md group">
+<div class="relative w-full h-full rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 shadow-sm hover:shadow-md group">
 <div class="grid grid-cols-2 gap-1 h-full p-1">
                             @foreach ($displayImages as $index => $image)
                                 <div class="relative rounded overflow-hidden bg-gray-100 dark:bg-gray-700 h-full min-h-[24px]">
@@ -281,6 +283,10 @@ public function addStagedImage(): void
                                     </button>
                                 </div>
                             @endforeach
+                            <!-- Client-side preview for current upload -->
+                            <div class="relative rounded overflow-hidden bg-gray-100 dark:bg-gray-700 h-full min-h-[24px] hidden">
+                                <img class="staged-preview w-full h-full object-cover" alt="Live preview">
+                            </div>
                             @if ($hiddenCount > 0)
                                 <div class="col-span-2 relative rounded overflow-hidden bg-gray-200 dark:bg-gray-700 h-full flex items-center justify-center">
                                     <span class="text-xs font-bold text-gray-500 dark:text-gray-400">+{{ $hiddenCount }} lagi</span>
@@ -345,7 +351,7 @@ public function addStagedImage(): void
                     class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     wire:loading.attr="disabled"
                     wire:loading.target="save"
-                    disabled="{{ $blocked['banned'] || (count($this->compressedImages) === 0 && empty(trim($this->caption))) || $isProcessing }}"
+disabled="{{ $blocked['banned'] || $isProcessing }}"
                     wire:target="save">
                     <span wire:loading.remove>Posting</span>
                     <span wire:loading>
@@ -369,6 +375,14 @@ public function addStagedImage(): void
 
             const file = e.target.files[0];
             if (!file) return;
+
+            // Immediate client-side preview
+            const previewUrl = URL.createObjectURL(file);
+            const stagedPreview = document.querySelector('.staged-preview');
+            if (stagedPreview) {
+                stagedPreview.src = previewUrl;
+                stagedPreview.classList.remove('hidden');
+            }
 
             isUploading = true;
             const uploadLabel = this.parentElement;
