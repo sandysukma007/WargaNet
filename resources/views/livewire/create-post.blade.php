@@ -153,9 +153,10 @@ public function addStagedImage(): void
 
 
 
-        $this->validate([
-            'compressedImages.*' => 'nullable|image|max:5120', // Each image max 5MB
-            'caption' => 'nullable|string|max:1000',
+            $this->validate([
+            'compressedImages' => 'required|array|min:1',
+            'compressedImages.*' => 'image|max:5120', 
+            'caption' => 'required|string|max:1000|min:1',
         ]);
 
         try {
@@ -349,10 +350,10 @@ class="w-full resize-none border-none bg-transparent p-0 text-sm text-black dark
 
             @if (!$blocked['banned'])
                 <button type="submit"
-                    class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-bold text-sm transition-all shadow-md hover:shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-8 py-3 rounded-xl font-bold text-sm shadow-lg hover:shadow-xl hover:from-emerald-600 hover:to-teal-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ring-2 ring-emerald-400/50 hover:ring-emerald-500/70 flex items-center gap-2 min-w-[120px] justify-center h-12 border-0 appearance-none focus:outline-none focus:ring-4 focus:ring-emerald-300"
                     wire:loading.attr="disabled"
                     wire:loading.target="save"
-disabled="{{ $blocked['banned'] || $isProcessing || empty(trim($caption)) || count($compressedImages) === 0 }}"
+disabled="{{ $blocked['banned'] || $isProcessing }}" 
                     wire:target="save">
                     <span wire:loading.remove>Posting</span>
                     <span wire:loading>
